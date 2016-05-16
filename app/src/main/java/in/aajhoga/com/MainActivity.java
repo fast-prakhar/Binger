@@ -58,17 +58,19 @@ public class MainActivity extends AppCompatActivity implements ImageDownloadFail
         stop = (Button) findViewById(R.id.stop);
         textView = (TextView) findViewById(R.id.tv1);
         gridView = (GridView)findViewById(R.id.grid_view);
-        sharedPreferences = getSharedPreferences("hello", MODE_PRIVATE);
-        retryCount = getSharedPreferences(mUtility.mRetryCount, MODE_PRIVATE);
-        SharedPreferences.Editor editor = retryCount.edit();
-        editor.putInt(mUtility.mRetryCount, 0);
-        editor.commit();
+        sharedPreferences = this.getSharedPreferences("hello", MODE_PRIVATE);
+
         textView.setText(sharedPreferences.getString("imageTitle","No Image "));
         if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, rCode);
         }
         mUtility = new Utility();
         mUtility.setImageDownloadFailedListener(this);
+
+        retryCount = getSharedPreferences(mUtility.mRetryCount, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = retryCount.edit();
+        editor.putInt(mUtility.mRetryCount, 0);
+        editor.commit();
 
         new loadImage().execute();
         start.setOnClickListener(new View.OnClickListener() {
