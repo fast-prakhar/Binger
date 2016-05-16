@@ -43,6 +43,10 @@ public class Utility {
     private SharedPreferences sp;
     private Context context;
     public static final String ACTION="hello";
+    public String mRetryCount = "count";
+
+
+    ImageDownloadFailedListener mListener;
 
     public Utility() {
         super();
@@ -50,6 +54,11 @@ public class Utility {
     public Utility(Context context){
         this.context=context;
     }
+
+    public void setImageDownloadFailedListener(ImageDownloadFailedListener mListener) {
+        this.mListener = mListener;
+    }
+
 
     public boolean sendTokenToServer(String token) throws IOException {
         OkHttpClient okHttpClient = new OkHttpClient();
@@ -123,6 +132,7 @@ public class Utility {
                     editor.putInt("downloadStatus",0);
                     editor.apply();
                     Log.d("WWE", "Download failed");
+                    mListener.onDownloadFailed();
 
                 }
 
@@ -206,4 +216,6 @@ public class Utility {
         return "";
 
     }
+
+
 }

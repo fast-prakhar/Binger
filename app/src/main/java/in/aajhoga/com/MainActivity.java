@@ -34,7 +34,9 @@ import java.util.Collections;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MainActivity extends AppCompatActivity  {
+public class MainActivity extends AppCompatActivity implements ImageDownloadFailedListener  {
+    private static final String LOG_TAG = MainActivity.class.getSimpleName();
+    private static final int MAX_RETRY_LIMIT = 5;
     final int rCode=3;
     private Button start;
     private Button stop;
@@ -43,8 +45,10 @@ public class MainActivity extends AppCompatActivity  {
     private Context mContext;
     private ArrayList<Bitmap> bitmapList;
     private SharedPreferences sharedPreferences;
+    private SharedPreferences retryCount;
     private wallpaperAdapter adapter;
     private GridView gridView;
+    Utility mUtility;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,10 +59,16 @@ public class MainActivity extends AppCompatActivity  {
         textView = (TextView) findViewById(R.id.tv1);
         gridView = (GridView)findViewById(R.id.grid_view);
         sharedPreferences = getSharedPreferences("hello", MODE_PRIVATE);
+        retryCount = getSharedPreferences(mUtility.mRetryCount, MODE_PRIVATE);
+        SharedPreferences.Editor editor = retryCount.edit();
+        editor.putInt(mUtility.mRetryCount, 0);
+        editor.commit();
         textView.setText(sharedPreferences.getString("imageTitle","No Image "));
         if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, rCode);
         }
+        mUtility = new Utility();
+        mUtility.setImageDownloadFailedListener(this);
 
         new loadImage().execute();
         start.setOnClickListener(new View.OnClickListener() {
@@ -67,7 +77,7 @@ public class MainActivity extends AppCompatActivity  {
                 File sdcard = Environment.getExternalStorageDirectory();
                 File f=new File(sdcard+"/Bing Images");
                 f.mkdir();
-                Log.d("WWE", "STart clicked");
+                Log.d(LOG_TAG, "STart clicked");
                 if (isNetworkAvailable() == true) {
                     startService(new Intent(mContext, RegistrationIntentService.class));
                 }
@@ -139,9 +149,9 @@ public class MainActivity extends AppCompatActivity  {
     @Override
     protected void onResume() {
         super.onResume();
-        IntentFilter iff= new IntentFilter(Utility.ACTION);
+        IntentFilter iff= new IntentFilter(mUtility.ACTION);
         LocalBroadcastManager.getInstance(this).registerReceiver(onNotice, iff);
-        textView.setText(sharedPreferences.getString("imageTitle","No Image "));
+        textView.setText(sharedPreferences.getString("imageTitle", "No Image"));
     }
 
     @Override
@@ -165,12 +175,37 @@ public class MainActivity extends AppCompatActivity  {
         }
     }
 
+    @Override
+    public void onDownloadFailed() {
+        int count = 0;
+        retryCount = getSharedPreferences(mUtility.mRetryCount, MODE_PRIVATE);
+        count = retryCount.getInt(mUtility.mRetryCount, 0);
+        if (count < MAX_RETRY_LIMIT) {
+            File sdcard = Environment.getExternalStorageDirectory();
+            File f = new File(sdcard + "/Bing Images");
+            f.mkdir();
+            Log.d(LOG_TAG, "STart clicked");
+            if (isNetworkAvailable() == true) {
+                startService(new Intent(mContext, RegistrationIntentService.class));
+            } else {
+                Toast toast = Toast.makeText(getApplicationContext(), "NetWork not available", Toast.LENGTH_SHORT);
+                Log.d("WWE", "Network Not available");
+                toast.show();
+            }
+        }  else {
+            count++;
+            SharedPreferences.Editor editor = retryCount.edit();
+            editor.putInt(mUtility.mRetryCount, count);
+            editor.commit();
+        }
+    }
+
 
     private class loadImage extends AsyncTask<Void,Void,Void>{
 
         @Override
         protected Void doInBackground(Void... params) {
-            bitmapList=new Utility().getAllFiles();
+            bitmapList=mUtility.getAllFiles();
             adapter = new wallpaperAdapter(mContext,bitmapList);
             return null;
         }
