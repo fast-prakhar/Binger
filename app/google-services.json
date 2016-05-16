@@ -1,0 +1,43 @@
+{
+  "project_info": {
+    "project_id": "aajhoga-1286",
+    "project_number": "371452578475",
+    "name": "aajhoga"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:371452578475:android:039d14b2754da121",
+        "client_id": "android:in.aajhoga.com",
+        "client_type": 1,
+        "android_client_info": {
+          "package_name": "in.aajhoga.com",
+          "certificate_hash": []
+        }
+      },
+      "oauth_client": [],
+      "api_key": [],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "cloud_messaging_service": {
+          "status": 2,
+          "apns_config": []
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "google_signin_service": {
+          "status": 1
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "client_info": [],
+  "ARTIFACT_VERSION": "1"
+}

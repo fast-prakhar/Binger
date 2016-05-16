@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">aaj</string>
+    <string name="pref_key_SENT_TOKEN_TO_SERVER">key sent token to server</string>
+    <string name="intent_name_REGISTRATION_COMPLETE">Reg complete</string>
+</resources>
