@@ -34,7 +34,7 @@ import java.util.Collections;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MainActivity extends AppCompatActivity implements ImageDownloadFailedListener  {
+public class MainActivity extends AppCompatActivity  {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final int MAX_RETRY_LIMIT = 5;
     final int rCode=3;
@@ -64,8 +64,8 @@ public class MainActivity extends AppCompatActivity implements ImageDownloadFail
         if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, rCode);
         }
-        mUtility = new Utility();
-        mUtility.setImageDownloadFailedListener(this);
+        mUtility = new Utility(this);
+
 
         retryCount = getSharedPreferences(mUtility.mRetryCount, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = retryCount.edit();
@@ -174,31 +174,6 @@ public class MainActivity extends AppCompatActivity implements ImageDownloadFail
                 }
                 return;
             }
-        }
-    }
-
-    @Override
-    public void onDownloadFailed() {
-        int count = 0;
-        retryCount = getSharedPreferences(mUtility.mRetryCount, MODE_PRIVATE);
-        count = retryCount.getInt(mUtility.mRetryCount, 0);
-        if (count < MAX_RETRY_LIMIT) {
-            File sdcard = Environment.getExternalStorageDirectory();
-            File f = new File(sdcard + "/Bing Images");
-            f.mkdir();
-            Log.d(LOG_TAG, "STart clicked");
-            if (isNetworkAvailable() == true) {
-                startService(new Intent(mContext, RegistrationIntentService.class));
-            } else {
-                Toast toast = Toast.makeText(getApplicationContext(), "NetWork not available", Toast.LENGTH_SHORT);
-                Log.d("WWE", "Network Not available");
-                toast.show();
-            }
-        }  else {
-            count++;
-            SharedPreferences.Editor editor = retryCount.edit();
-            editor.putInt(mUtility.mRetryCount, count);
-            editor.commit();
         }
     }
 

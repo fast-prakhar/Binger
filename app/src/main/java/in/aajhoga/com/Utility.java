@@ -1,11 +1,14 @@
 package in.aajhoga.com;
 
+import android.app.Application;
 import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -40,19 +43,29 @@ import okhttp3.Response;
  * Created by aprakhar on 5/2/2016.
  */
 public class Utility {
-    private SharedPreferences sp;
+    private static final int MAX_RETRY_LIMIT = 5;
+    private static final String LOG_TAG = Utility.class.getSimpleName();
+    private SharedPreferences sp, retryCount;
     private Context context;
     public static final String ACTION="hello";
     public String mRetryCount = "count";
 
-
-    ImageDownloadFailedListener mListener;
+    private String imageUrl;
+    private String imageTitle;
 
     public Utility() {
         super();
+
     }
     public Utility(Context context){
         this.context=context;
+        init(context);
+    }
+
+    private void init(Context mContext) {
+        retryCount = mContext.getSharedPreferences(mRetryCount, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = retryCount.edit();
+        editor.putInt(mRetryCount, 0);
     }
 
     public void setImageDownloadFailedListener(ImageDownloadFailedListener mListener) {
@@ -99,6 +112,8 @@ public class Utility {
     }
 
     public String downloadImage(String myJsonstring,String myImageTitle){
+        imageUrl = myJsonstring;
+        imageTitle = myImageTitle;
         sp=this.context.getSharedPreferences("hello",Context.MODE_PRIVATE);
         final SharedPreferences.Editor editor = sp.edit();
         String imageMd5;
@@ -132,7 +147,8 @@ public class Utility {
                     editor.putInt("downloadStatus",0);
                     editor.apply();
                     Log.d("WWE", "Download failed");
-                    mListener.onDownloadFailed();
+
+                    retryDownload();
 
                 }
 
@@ -183,6 +199,34 @@ public class Utility {
             return "false";
         }
         return sp.getString("fileName",null);
+    }
+
+    private void retryDownload() {
+        SharedPreferences.Editor editor = retryCount.edit();
+        int count = 0;
+
+        count = retryCount.getInt(mRetryCount, 0);
+        if (count < MAX_RETRY_LIMIT) {
+            File sdcard = Environment.getExternalStorageDirectory();
+            File f = new File(sdcard + "/Bing Images");
+            f.mkdir();
+            Log.d(LOG_TAG, "STart clicked");
+            if (isNetworkAvailable() == true) {
+                downloadImage(imageUrl, imageTitle);
+            }
+
+        }  else {
+            count++;
+            editor.putInt(mRetryCount, count);
+            editor.commit();
+        }
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
 
