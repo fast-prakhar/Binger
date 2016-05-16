@@ -1,6 +1,9 @@
 package in.aajhoga.com;
 
 import android.app.Application;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.Intent;
@@ -11,6 +14,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.view.View;
 
@@ -67,11 +71,6 @@ public class Utility {
         SharedPreferences.Editor editor = retryCount.edit();
         editor.putInt(mRetryCount, 0);
     }
-
-    public void setImageDownloadFailedListener(ImageDownloadFailedListener mListener) {
-        this.mListener = mListener;
-    }
-
 
     public boolean sendTokenToServer(String token) throws IOException {
         OkHttpClient okHttpClient = new OkHttpClient();
@@ -131,7 +130,6 @@ public class Utility {
 
         spImageMd5 = sp.getString("imageMd5", "temp");
         if (spImageMd5 != "temp" || spImageMd5.compareTo(imageMd5) != 0) {
-
             //Log.d("Past Image", spImageMd5);
             //Log.d("Current Image", imageMd5);
             editor.putString("imageMd5", imageMd5);
@@ -204,7 +202,6 @@ public class Utility {
     private void retryDownload() {
         SharedPreferences.Editor editor = retryCount.edit();
         int count = 0;
-
         count = retryCount.getInt(mRetryCount, 0);
         if (count < MAX_RETRY_LIMIT) {
             File sdcard = Environment.getExternalStorageDirectory();
@@ -214,12 +211,33 @@ public class Utility {
             if (isNetworkAvailable() == true) {
                 downloadImage(imageUrl, imageTitle);
             }
-
-        }  else {
             count++;
             editor.putInt(mRetryCount, count);
             editor.commit();
+        }  else {
+            generateNotification();
         }
+    }
+
+    private void generateNotification() {
+        Intent intent = new Intent(context, MainActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        NotificationCompat.Builder b = new NotificationCompat.Builder(context);
+
+        b.setAutoCancel(true)
+                .setDefaults(Notification.DEFAULT_ALL)
+                .setWhen(System.currentTimeMillis())
+                .setSmallIcon(R.drawable.cast_ic_notification_1)
+                .setContentTitle("Download Failed")
+                .setContentText("Image downloading failed after 5 attempts.")
+                .setDefaults(Notification.DEFAULT_LIGHTS| Notification.DEFAULT_SOUND)
+                .setContentIntent(contentIntent)
+                .setContentInfo("Info");
+
+
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(1, b.build());
     }
 
     private boolean isNetworkAvailable() {
