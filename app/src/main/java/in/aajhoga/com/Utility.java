@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
@@ -47,6 +48,7 @@ import okhttp3.Response;
  * Created by aprakhar on 5/2/2016.
  */
 public class Utility {
+    private CountDownLatch _latch=null;
     private static final int MAX_RETRY_LIMIT = 5;
     private static final String LOG_TAG = Utility.class.getSimpleName();
     private SharedPreferences sp, retryCount;
@@ -61,9 +63,18 @@ public class Utility {
         super();
 
     }
+
+    public void initLatch(CountDownLatch _latch){
+        this._latch=_latch;
+    }
     public Utility(Context context){
         this.context=context;
         init(context);
+    }
+
+    public Utility(Context context,CountDownLatch _latch){
+        this.context=context;
+        this._latch=_latch;
     }
 
     private void init(Context mContext) {
@@ -110,7 +121,7 @@ public class Utility {
         return f;
     }
 
-    public String downloadImage(String myJsonstring,String myImageTitle){
+    public void downloadImage(String myJsonstring,String myImageTitle){
         imageUrl = myJsonstring;
         imageTitle = myImageTitle;
         sp=this.context.getSharedPreferences("hello",Context.MODE_PRIVATE);
@@ -145,8 +156,9 @@ public class Utility {
                     editor.putInt("downloadStatus",0);
                     editor.apply();
                     Log.d("WWE", "Download failed");
+                    _latch.countDown();
 
-                    retryDownload();
+                   // retryDownload();
 
                 }
 
@@ -160,7 +172,7 @@ public class Utility {
                     filename = filename + ".jpg";
                     File path = Environment.getExternalStorageDirectory();
                     File file = new File(path + "/Bing Images", filename);
-                    Log.d("filename", filename);
+                    Log.d("filename loading", filename);
                     Intent I = new Intent(ACTION);
                     I.putExtra("Filename", finalMyImageTitle);
                     I.putExtra("Displayname", filename);
@@ -188,17 +200,16 @@ public class Utility {
                     editor.apply();
                     boolean b = LocalBroadcastManager.getInstance(context).sendBroadcast(I);
                     Log.d("WWE", String.valueOf(b));
+                    _latch.countDown();
                 }
             });
 
         }
 
-        if (sp.getInt("downloadStatus",2) == 0 || sp.getInt("downloadStatus",2) == 2 ){
-            return "false";
-        }
-        return sp.getString("fileName",null);
-    }
 
+
+    }
+/*
     private void retryDownload() {
         SharedPreferences.Editor editor = retryCount.edit();
         int count = 0;
@@ -209,7 +220,15 @@ public class Utility {
             f.mkdir();
             Log.d(LOG_TAG, "STart clicked");
             if (isNetworkAvailable() == true) {
-                downloadImage(imageUrl, imageTitle);
+                String e = downloadImage(imageUrl, imageTitle);
+                if (e != "false") {
+                    try {
+                        setImageAsWallpaper(e);
+                        Log.d("wwe","setted from retrier");
+                    } catch (IOException p) {
+                        p.printStackTrace();
+                    }
+                }
             }
             count++;
             editor.putInt(mRetryCount, count);
@@ -218,7 +237,7 @@ public class Utility {
             generateNotification();
         }
     }
-
+*/
     private void generateNotification() {
         Intent intent = new Intent(context, MainActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -250,7 +269,7 @@ public class Utility {
 
     public void setImageAsWallpaper(String fileName) throws IOException {
         File file=new File(android.os.Environment.getExternalStorageDirectory()+"/Bing Images/",fileName);
-        Log.d("Displayname",fileName +" " +  file.getAbsolutePath());
+        Log.d("Displayname from utilit",fileName +" " +  file.getAbsolutePath());
         Bitmap loadedImage = BitmapFactory.decodeFile(file.getAbsolutePath());
         WallpaperManager wallpaperManager = WallpaperManager.getInstance(context);
         wallpaperManager.setBitmap(loadedImage);
