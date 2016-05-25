@@ -1,5 +1,6 @@
 package in.aajhoga.com;
 
+import android.app.ActivityManager;
 import android.app.Application;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -12,7 +13,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
@@ -98,30 +101,34 @@ public class Utility {
         return true;
     }
 
-    public ArrayList<Bitmap> getAllFiles(){
+    public ArrayList<String> getAllFiles(){
         //List<Bitmap> list = new ArrayList<>();
-        ArrayList<Bitmap> f = new ArrayList<Bitmap>();// list of file paths
+        ArrayList<String> f = new ArrayList<String>();// list of file paths
         File[] listFile;
         File file= new File(android.os.Environment.getExternalStorageDirectory(),"Bing Images");
 
-        if (file.isDirectory())
-        {
+        if (file.isDirectory()) {
             listFile = file.listFiles();
-           // Log.d("Total files",String.valueOf(listFile.length));
+            // Log.d("Total files",String.valueOf(listFile.length));
+            if (listFile != null) {
 
-            for (int i = 0; i < listFile.length; i++)
-            {
+                for (int i = 0; i < listFile.length; i++) {
 
-                f.add(BitmapFactory.decodeFile(listFile[i].getAbsolutePath()));
-                Log.d("WWe",listFile[i].getAbsolutePath());
+                    f.add(listFile[i].getAbsolutePath());
+                    Log.d("WWe", listFile[i].getAbsolutePath());
 
+                }
+                Collections.reverse(f);
             }
-            Collections.reverse(f);
+            return f;
         }
-        return f;
+        else {
+            return f;
+        }
+
     }
 
-    public void downloadImage(String myJsonstring,String myImageTitle){
+    public String downloadImage(String myJsonstring, final String myImageTitle){
         imageUrl = myJsonstring;
         imageTitle = myImageTitle;
         sp=this.context.getSharedPreferences("hello",Context.MODE_PRIVATE);
@@ -156,9 +163,9 @@ public class Utility {
                     editor.putInt("downloadStatus",0);
                     editor.apply();
                     Log.d("WWE", "Download failed");
-                    _latch.countDown();
+                    //_latch.countDown();
 
-                   // retryDownload();
+                    retryDownload();
 
                 }
 
@@ -198,18 +205,34 @@ public class Utility {
                     editor.putInt("downloadStatus",1);
                     editor.putString("fileName",filename);
                     editor.apply();
-                    boolean b = LocalBroadcastManager.getInstance(context).sendBroadcast(I);
-                    Log.d("WWE", String.valueOf(b));
-                    _latch.countDown();
+
+                    try {
+                        setImageAsWallpaper(filename);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    if(isInForeground() == true){
+                        boolean b = LocalBroadcastManager.getInstance(context).sendBroadcast(I);
+                        Log.d(LOG_TAG, String.valueOf(b));
+                        Log.d(LOG_TAG,"in foreground");
+                    }
+                    else {
+                        createNotification(myImageTitle,filename);
+                        Log.d(LOG_TAG,"in background");
+                    }
+
+
+                    //_latch.countDown();
                 }
             });
 
         }
 
 
-
+        return imageMd5;
     }
-/*
+
     private void retryDownload() {
         SharedPreferences.Editor editor = retryCount.edit();
         int count = 0;
@@ -237,7 +260,7 @@ public class Utility {
             generateNotification();
         }
     }
-*/
+
     private void generateNotification() {
         Intent intent = new Intent(context, MainActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -277,7 +300,7 @@ public class Utility {
 
     }
 
-
+    @NonNull
     private static String md5(String s) { try {
 
         // Create MD5 Hash
@@ -298,5 +321,43 @@ public class Utility {
 
     }
 
+    public interface DownloadCompleteListener {
+        void onDownloadComplete();
+    }
+
+    private  void createNotification(String myImageTitle,String filename) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
+            NotificationCompat.Builder mBuilder = (NotificationCompat.Builder) new NotificationCompat.Builder(context)
+                    .setSmallIcon(R.drawable.cast_ic_notification_2)
+                    .setContentTitle("GCM")
+                    .setAutoCancel(true)
+                    .setContentText(myImageTitle);
+            Intent I = new Intent(context,MainActivity.class);
+            I.putExtra("Displayname", filename);
+            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0,I, PendingIntent.FLAG_UPDATE_CURRENT);
+            mBuilder.setContentIntent(pendingIntent);
+
+            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.notify(7, mBuilder.build());
+
+        }
+    }
+
+    public  boolean isInForeground() {
+        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> runningProcesses = am.getRunningAppProcesses();
+        for (ActivityManager.RunningAppProcessInfo processInfo : runningProcesses) {
+            if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                for (String activeProcess : processInfo.pkgList) {
+                    if (activeProcess.equals(context.getPackageName())) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+
+        return false;
+    }
 
 }
