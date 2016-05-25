@@ -1,9 +1,12 @@
 package in.aajhoga.com;
 
+import android.app.ActivityManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.WallpaperInfo;
 import android.app.WallpaperManager;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -45,6 +48,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -78,12 +82,13 @@ public class MyGcmListenerService extends GcmListenerService {
         myImageTitle = data.getString("Title");
         editor.putString("URL", myJsonstring);
 
-        createNotification(myImageTitle);
         editor.apply();
         Log.d("wwe",1+"");
         String z=null;
         _latch = new CountDownLatch(N);
         final Utility t = new Utility(getApplicationContext());
+        new Utility(getApplicationContext()).downloadImage(myJsonstring, myImageTitle);
+        /*
         try {
             for (int i = 0; i < N; i++) {
                 Log.d("wwe","in for loop");
@@ -112,71 +117,8 @@ public class MyGcmListenerService extends GcmListenerService {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-        /*
-        new AsyncTask() {
-            @Override
-            protected Object doInBackground(Object[] params) {
-                String z = t.downloadImage((String) params[0],"for now");
-                Log.d("wwe",2+" ");
-                Log.d("wwe","z is "+z);
-                return z;
-            }
-
-            @Override
-            protected void onPostExecute(Object o) {
-                Log.d("wwe",3+"");
-                String z = (String) o;
-                if (z != "false") {
-                    try {
-                        t.setImageAsWallpaper(z);
-                        Log.d("wwe","set");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }.execute(myJsonstring);
-        Log.d("wwe",4+"");
         */
     }
 
-    private static String md5(String s) { try {
 
-        // Create MD5 Hash
-        MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
-        digest.update(s.getBytes());
-        byte messageDigest[] = digest.digest();
-
-        // Create Hex String
-        StringBuffer hexString = new StringBuffer();
-        for (int i=0; i<messageDigest.length; i++)
-            hexString.append(Integer.toHexString(0xFF & messageDigest[i]));
-        return hexString.toString();
-
-    } catch (NoSuchAlgorithmException e) {
-        e.printStackTrace();
-    }
-        return "";
-
-    }
-
-
-    private  void createNotification(String myImageTitle){
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
-            NotificationCompat.Builder mBuilder = (NotificationCompat.Builder) new NotificationCompat.Builder(getApplicationContext())
-                    .setSmallIcon(R.drawable.cast_ic_notification_2)
-                    .setContentTitle("GCM")
-                    .setAutoCancel(true)
-                    .setContentText(myImageTitle);
-            PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0,
-                    new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
-            mBuilder.setContentIntent(pendingIntent);
-
-            NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            notificationManager.notify(7, mBuilder.build());
-
-        }
-
-    }
 }
