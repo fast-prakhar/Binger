@@ -1,55 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/lL"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#9C27B0"
     android:orientation="vertical"
     android:paddingBottom="4dp"
     android:paddingLeft="1dp"
     android:paddingRight="1dp"
     android:paddingTop="7dp"
     tools:context="in.aajhoga.com.MainActivity">
+    <!--
+        <in.aajhoga.com.CircleView
+            android:id="@+id/cV1"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center" />
+
+
 
     <Button
-        android:layout_width="120dp"
-        android:layout_height="50dp"
+            android:layout_width="120dp"
+            android:layout_height="50dp"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:text="Start "
+            android:id="@+id/start"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_gravity="center_horizontal"
+            />
+        <Button
+            android:layout_width="120dp"
+            android:layout_height="50dp"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:text="Stop "
+            android:id="@+id/stop"
+            android:layout_gravity="center_horizontal" />
+
+-->
+    <TextView
+        android:id="@+id/tv2"
+        android:layout_width="235dp"
+        android:layout_height="64dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:text="Start "
-        android:id="@+id/start"
-        android:layout_marginBottom="@dimen/activity_vertical_margin"
-        android:layout_gravity="center_horizontal"
-        />
-    <Button
-        android:layout_width="120dp"
-        android:layout_height="50dp"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:text="Stop "
-        android:id="@+id/stop"
+        android:paddingTop="10dp"
+        android:text="Image of the day"
+        android:textColor="#212121"
+        android:textSize="17dp"
         android:layout_gravity="center_horizontal" />
 
-
     <TextView
+        android:id="@+id/tv1"
         android:layout_width="250dp"
-        android:layout_height="80dp"
+        android:layout_height="159dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:text="Work"
-        android:textSize="17dp"
-        android:id="@+id/tv1"
         android:layout_gravity="center_horizontal"
-        />
+        android:paddingTop="10dp"
+        android:text=""
+        android:textColor="#212121"
+        android:textSize="17dp" />
+
+
     <GridView
-        android:fastScrollEnabled="true"
+        android:id="@+id/grid_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/grid_view"
-        android:numColumns="auto_fit"
-        android:horizontalSpacing="1dp"
-        android:verticalSpacing="1dp"
+        android:background="#FFEB3B"
+        android:fastScrollEnabled="true"
         android:gravity="center"
-        android:stretchMode="columnWidth">
+        android:horizontalSpacing="1dp"
+        android:numColumns="auto_fit"
+        android:stretchMode="columnWidth"
+        android:verticalSpacing="1dp">
 
     </GridView>
 

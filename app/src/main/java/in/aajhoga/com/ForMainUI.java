@@ -2,7 +2,6 @@ package in.aajhoga.com;
 
 import android.app.Activity;
 import android.content.Context;
-import android.util.Log;
 import android.widget.TextView;
 
 /**
@@ -17,8 +16,10 @@ public class ForMainUI extends Activity {
     }
 
     public void modifyMainUI(String value){
+        /*
         textView = (TextView)((Activity)mContext).findViewById(R.id.tv1);
         textView.setText(value);
         Log.d("WWE",textView.getText().toString());
+        */
     }
 }

@@ -1,7 +1,6 @@
 package in.aajhoga.com;
 
 import android.app.ActivityManager;
-import android.app.Application;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -13,7 +12,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
@@ -36,7 +34,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -175,8 +172,9 @@ public class Utility {
 
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
-                    String filename = sdf.format(Calendar.getInstance().getTime());
-                    filename = filename + ".jpg";
+                    //String filename = sdf.format(Calendar.getInstance().getTime());
+                    //filename = filename + ".jpg";
+                    String filename = String.valueOf(System.currentTimeMillis()) +".jpg";
                     File path = Environment.getExternalStorageDirectory();
                     File file = new File(path + "/Bing Images", filename);
                     Log.d("filename loading", filename);

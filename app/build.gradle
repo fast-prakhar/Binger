@@ -19,7 +19,7 @@ android {
 
             shrinkResources true
             minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
@@ -27,14 +27,16 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile files('libs/logentries-android.jar')
 
     compile 'com.android.support:appcompat-v7:23.3.0'
+    //compile 'com.google.android.gms:play-services:9.0.0'
     compile 'com.google.android.gms:play-services:8.3.0'
+
     compile 'com.squareup.okhttp3:okhttp:3.2.0'
     compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
     compile 'com.google.android.gms:play-services-ads:8.3.0'
     compile 'com.google.android.gms:play-services-auth:8.3.0'
     compile 'com.google.android.gms:play-services-gcm:8.3.0'
     compile 'com.github.bumptech.glide:glide:3.7.0'
+    //compile 'com.google.android.gms:play-services-analytics:9.0.0'
 }
