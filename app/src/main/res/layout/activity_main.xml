@@ -4,9 +4,9 @@
     android:id="@+id/lL"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#9C27B0"
+    android:background="#2196F3"
     android:orientation="vertical"
-    android:paddingBottom="4dp"
+    android:paddingBottom="0dp"
     android:paddingLeft="1dp"
     android:paddingRight="1dp"
     android:paddingTop="7dp"
@@ -42,34 +42,42 @@
 -->
     <TextView
         android:id="@+id/tv2"
-        android:layout_width="235dp"
-        android:layout_height="64dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:paddingTop="10dp"
         android:text="Image of the day"
-        android:textColor="#212121"
-        android:textSize="17dp"
+        android:textColor="#ffffff"
+        android:textStyle="bold"
+        android:textSize="22dp"
         android:layout_gravity="center_horizontal" />
+    <ImageView
+        android:layout_gravity="center_horizontal"
+        android:layout_width="250dp"
+        android:layout_height="@dimen/size_150"
+        android:scaleType="centerCrop"
+        android:id="@+id/image_of_the_day"/>
 
     <TextView
         android:id="@+id/tv1"
         android:layout_width="250dp"
-        android:layout_height="159dp"
+        android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_gravity="center_horizontal"
         android:paddingTop="10dp"
-        android:text=""
-        android:textColor="#212121"
-        android:textSize="17dp" />
+        android:textStyle="bold"
+        android:text="hfjdhfkjdhhs gf  "
+        android:textColor="#FFFFFF"
+        android:textSize="20dp" />
 
 
     <GridView
         android:id="@+id/grid_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#FFEB3B"
+        android:background="#B6B6B6"
         android:fastScrollEnabled="true"
         android:gravity="center"
         android:horizontalSpacing="1dp"
