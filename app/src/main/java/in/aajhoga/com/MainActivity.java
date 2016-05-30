@@ -25,9 +25,11 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
-import android.widget.LinearLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,35 +51,32 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences retryCount;
     private wallpaperAdapter adapter;
     private GridView gridView;
-    private CircleView circleView;
-    private LinearLayout linearLayout;
+    private ImageView imageOfTheDay;
     Utility mUtility;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        /*
-        circleView = new CircleView(this);
-        linearLayout = (LinearLayout) findViewById(R.id.lL);
-        linearLayout.addView(circleView);
-        */
+
         mContext = getApplicationContext();
-        //start = (Button) findViewById(R.id.start);
-        //stop = (Button) findViewById(R.id.stop);
         textView = (TextView) findViewById(R.id.tv1);
         gridView = (GridView) findViewById(R.id.grid_view);
+        imageOfTheDay= (ImageView) findViewById(R.id.image_of_the_day);
         registerForContextMenu(gridView);
 
         sharedPreferences = this.getSharedPreferences("hello", MODE_PRIVATE);
 
-        textView.setText(sharedPreferences.getString("imageTitle", "No Image "));
+        //textView.setText(sharedPreferences.getString("imageTitle", "No Image "));
         if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, rCode);
         }
+        else {
+            toBeExecutedEveryTime();
+            //func();
+        }
+        /*
         mUtility = new Utility(this);
-
-
         retryCount = getSharedPreferences(mUtility.mRetryCount, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = retryCount.edit();
         editor.putInt(mUtility.mRetryCount, 0);
@@ -89,6 +88,19 @@ public class MainActivity extends AppCompatActivity {
         String token = sharedPreferences.getString("TOKEN", defValue);
 
         f.mkdir();
+
+        try {
+            File image_of_the_day = new File(sdcard + "/Bing Images",sharedPreferences.getString("fileName",null));
+            Glide
+                    .with(this)
+                    .load(image_of_the_day.getAbsolutePath())
+                    .centerCrop()
+                    .into(imageOfTheDay);
+
+        } catch (Exception e) {
+            Log.d(LOG_TAG,"Image of the day not found");
+            e.printStackTrace();
+        }
         Log.d("WWEtoken at strt","@@@"+token);
         if (token == null) {
             if (isNetworkAvailable() == true) {
@@ -111,45 +123,8 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
-        /*
-        start.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                File sdcard = Environment.getExternalStorageDirectory();
-                File f=new File(sdcard+"/Bing Images");
-                f.mkdir();
-                Log.d(LOG_TAG, "STart clicked");
-                if (isNetworkAvailable() == true) {
-                    startService(new Intent(mContext, RegistrationIntentService.class));
-                }
-
-                else {
-                    Toast toast = Toast.makeText(getApplicationContext(), "NetWork not available", Toast.LENGTH_SHORT);
-                    Log.d("WWE", "Network Not available");
-                    toast.show();
-                }
-
-            }
-        });
-        stop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d("WWE", "Stop clicked");
-                String defValue = null;
-                String currentValue = sharedPreferences.getString("TOKEN", defValue);
-                if (currentValue != null) {
-                    try {
-                        new SubscriptionHandler(mContext).unSubscribeTopics(currentValue);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    Log.d("WWE", "Not Running");
-                }
-            }
-        });
         */
-    }
+        }
 
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
@@ -171,7 +146,10 @@ public class MainActivity extends AppCompatActivity {
             String displayname = intent.getStringExtra("Displayname");
             File file = new File(android.os.Environment.getExternalStorageDirectory() + "/Bing Images/", displayname);
             Log.d("Displayname", displayname + " " + file.getAbsolutePath());
-
+            Glide.with(mContext)
+                    .load(file.getAbsolutePath())
+                    .centerCrop()
+                    .into(imageOfTheDay);
             Collections.reverse(bitmapList);
             bitmapList.add(file.getAbsolutePath());
             Collections.reverse(bitmapList);
@@ -200,7 +178,9 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode) {
             case rCode: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    new loadImage().execute();
+                    toBeExecutedEveryTime();
+                    //new loadImage().execute();
+                    //func();
 
                 } else {
                     Toast t = Toast.makeText(getApplicationContext(), "Pls give permission", Toast.LENGTH_SHORT);
@@ -241,6 +221,10 @@ public class MainActivity extends AppCompatActivity {
             String displayname = intent.getStringExtra("Displayname");
             File file = new File(android.os.Environment.getExternalStorageDirectory() + "/Bing Images/", displayname);
             Log.d("Displayname", displayname + " " + file.getAbsolutePath());
+            Glide.with(mContext)
+                    .load(file.getAbsolutePath())
+                    .centerCrop()
+                    .into(imageOfTheDay);
             Collections.reverse(bitmapList);
             bitmapList.add(file.getAbsolutePath());
             Collections.reverse(bitmapList);
@@ -250,10 +234,6 @@ public class MainActivity extends AppCompatActivity {
         super.onNewIntent(intent);
     }
 
-    @Override
-    public void onTrimMemory(int level) {
-        super.onTrimMemory(level);
-    }
 
 
     @Override
@@ -346,6 +326,59 @@ public class MainActivity extends AppCompatActivity {
         }).start();
         Log.d("WWE", "Set using long click listener");
         return super.onContextItemSelected(item);
+    }
+
+
+    public void toBeExecutedEveryTime(){
+        mUtility = new Utility(this);
+        retryCount = getSharedPreferences(mUtility.mRetryCount, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = retryCount.edit();
+        editor.putInt(mUtility.mRetryCount, 0);
+        editor.commit();
+
+        File sdcard = Environment.getExternalStorageDirectory();
+        final File f = new File(sdcard + "/Bing Images");
+        String defValue = null;
+        String token = sharedPreferences.getString("TOKEN", defValue);
+
+        f.mkdir();
+
+        try {
+            File image_of_the_day = new File(sdcard + "/Bing Images",sharedPreferences.getString("fileName",null));
+            Glide
+                    .with(this)
+                    .load(image_of_the_day.getAbsolutePath())
+                    .centerCrop()
+                    .into(imageOfTheDay);
+
+        } catch (Exception e) {
+            Log.d(LOG_TAG,"Image of the day not found");
+            e.printStackTrace();
+        }
+        Log.d("WWEtoken at strt","@@@"+token);
+        if (token == null) {
+            if (isNetworkAvailable() == true) {
+                Log.d("WWE", "going through");
+                startService(new Intent(mContext, RegistrationIntentService.class));
+            } else {
+                Toast toast = Toast.makeText(getApplicationContext(), "NetWork not available", Toast.LENGTH_SHORT);
+                Log.d("WWE", "Network Not available");
+                toast.show();
+            }
+        }
+
+
+        new loadImage().execute();
+        gridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                // String str=gridView.getItemAtPosition(position).toString();
+                // Log.d("LONG click",str);
+                return false;
+            }
+        });
+
+
     }
 }
 
