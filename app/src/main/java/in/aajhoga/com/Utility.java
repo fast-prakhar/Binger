@@ -16,8 +16,10 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.NotificationCompat;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 
 import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -34,6 +36,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -151,79 +154,85 @@ public class Utility {
             editor.putString("imageTitle", myImageTitle);
             editor.commit();
             final String finalMyImageTitle = myImageTitle;
-            imageLoader.loadImage(imageUrl, new SimpleImageLoadingListener() {
-
-                @Override
-                public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-                    super.onLoadingFailed(imageUri, view, failReason);
-                    // if(failReason.getCause() != null)
-                    editor.putInt("downloadStatus",0);
-                    editor.apply();
-                    Log.d("WWE", "Download failed");
-                    //_latch.countDown();
-
-                    retryDownload();
-
-                }
-
-                @Override
-                public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                    //String path = Environment.getExternalStorageDirectory().toString();
-
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-
-                    //String filename = sdf.format(Calendar.getInstance().getTime());
-                    //filename = filename + ".jpg";
-                    String filename = String.valueOf(System.currentTimeMillis()) +".jpg";
-                    File path = Environment.getExternalStorageDirectory();
-                    File file = new File(path + "/Bing Images", filename);
-                    Log.d("filename loading", filename);
-                    Intent I = new Intent(ACTION);
-                    I.putExtra("Filename", finalMyImageTitle);
-                    I.putExtra("Displayname", filename);
+            try {
+                imageLoader.loadImage(imageUrl, new SimpleImageLoadingListener() {
 
 
-                    OutputStream fout = null;
-                    try {
-                        fout = new FileOutputStream(file);
-                        Log.d("WWE", "File written");
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                    loadedImage.compress(Bitmap.CompressFormat.JPEG, 85, fout);
-                    try {
-                        fout.flush();
-                        fout.close();
-                        Log.d("WWE", "FLUSHED");
+                    @Override
+                    public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+                        super.onLoadingFailed(imageUri, view, failReason);
+                        // if(failReason.getCause() != null)
+                        editor.putInt("downloadStatus",0);
+                        editor.apply();
+                        Log.d("WWE", "Download failed");
+                        //_latch.countDown();
 
-                    } catch (IOException e) {
-                        Log.d("WWE ERROR", "Not changed");
-                        e.printStackTrace();
-                    }
-                    editor.putInt("downloadStatus",1);
-                    editor.putString("fileName",filename);
-                    editor.apply();
+                        retryDownload();
 
-                    try {
-                        setImageAsWallpaper(filename);
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
 
-                    if(isInForeground() == true){
-                        boolean b = LocalBroadcastManager.getInstance(context).sendBroadcast(I);
-                        Log.d(LOG_TAG, String.valueOf(b));
-                        Log.d(LOG_TAG,"in foreground");
-                    }
-                    else {
-                        createNotification(myImageTitle,filename);
-                        Log.d(LOG_TAG,"in background");
-                    }
+                    @Override
+                    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                        //String path = Environment.getExternalStorageDirectory().toString();
+
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+                        String filename = sdf.format(Calendar.getInstance().getTime());
+                        filename = filename + ".jpg";
+                        //String filename = String.valueOf(System.currentTimeMillis()) +".jpg";
+                        File path = Environment.getExternalStorageDirectory();
+                        File file = new File(path + "/Bing Images", filename);
+                        Log.d("filename loading", filename);
+                        Intent I = new Intent(ACTION);
+                        I.putExtra("Filename", finalMyImageTitle);
+                        I.putExtra("Displayname", filename);
 
 
-                    //_latch.countDown();
-                }
-            });
+                        OutputStream fout = null;
+                        try {
+                            fout = new FileOutputStream(file);
+                            Log.d("WWE", "File written");
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                        loadedImage.compress(Bitmap.CompressFormat.JPEG, 85, fout);
+                        try {
+                            fout.flush();
+                            fout.close();
+                            Log.d("WWE", "FLUSHED");
+
+                        } catch (IOException e) {
+                            Log.d("WWE ERROR", "Not changed");
+                            e.printStackTrace();
+                        }
+                        editor.putInt("downloadStatus",1);
+                        editor.putString("fileName",filename);
+                        editor.apply();
+
+                        try {
+                            setImageAsWallpaper(filename);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                        if(isInForeground() == true){
+                            boolean b = LocalBroadcastManager.getInstance(context).sendBroadcast(I);
+                            Log.d(LOG_TAG, String.valueOf(b));
+                            Log.d(LOG_TAG,"in foreground");
+                        }
+                        else {
+                            createNotification(myImageTitle,filename);
+                            Log.d(LOG_TAG,"in background");
+                        }
+
+
+                        //_latch.countDown();
+                    }
+                });
+            } catch (Exception e) {
+                Log.d(LOG_TAG,"Every error");
+                e.printStackTrace();
+            }
 
         }
 
@@ -292,10 +301,19 @@ public class Utility {
         File file=new File(android.os.Environment.getExternalStorageDirectory()+"/Bing Images/",fileName);
         Log.d("Displayname from utilit",fileName +" " +  file.getAbsolutePath());
         Bitmap loadedImage = BitmapFactory.decodeFile(file.getAbsolutePath());
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        WindowManager windowManager = (WindowManager) context
+                .getSystemService(Context.WINDOW_SERVICE);
+        windowManager.getDefaultDisplay().getMetrics(displayMetrics);
+        int height=displayMetrics.heightPixels;
+        int width=displayMetrics.widthPixels;
+        //loadedImage = Bitmap.createScaledBitmap(loadedImage, width, height, false);
         WallpaperManager wallpaperManager = WallpaperManager.getInstance(context);
+        wallpaperManager.setWallpaperOffsetSteps(1,1);
+        wallpaperManager.suggestDesiredDimensions(width,height);
         wallpaperManager.setBitmap(loadedImage);
         Log.d("wwe", "supported");
-
+        if (!loadedImage.isRecycled()) loadedImage.recycle();
     }
 
     @NonNull
@@ -358,4 +376,19 @@ public class Utility {
         return false;
     }
 
+
+    public static void log(final String msg)
+    {
+
+        final Throwable t = new Throwable();
+        final StackTraceElement[] elements = t.getStackTrace();
+
+        final String callerClassName = elements[1].getFileName();
+        final String callerMethodName = elements[1].getMethodName();
+
+        String TAG = "[" + callerClassName + "]";
+
+        Log.d(TAG, "[" + callerMethodName + "] " + msg);
+
+    }
 }

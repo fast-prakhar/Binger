@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/image_of_the_dacccy"
+    android:layout_width="match_parent"
+    android:layout_height="200dp"
+    android:src="@mipmap/ic_launcher"
+    android:layout_gravity="center_horizontal"
+    android:scaleType="centerCrop"
+    android:scrollbars="vertical">
+
+</ImageView>

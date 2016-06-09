@@ -3,13 +3,13 @@
     android:orientation="vertical"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:weightSum="2"
-    android:padding="1dp"
+    android:weightSum="3"
+    android:padding="0dp"
     android:background="#B6B6B6">
     <ImageView
         android:layout_weight="1"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/size_150"
+        android:layout_height="@dimen/size_100"
         android:scaleType="centerCrop"
         android:id="@+id/grid_image"/>
 

@@ -24,8 +24,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,8 +50,13 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
     private SharedPreferences retryCount;
     private wallpaperAdapter adapter;
-    private GridView gridView;
+    private HeaderGridView gridView;
     private ImageView imageOfTheDay;
+    private LinearLayout linearLayout;
+
+    //private ProgressBar progressBar;
+    //AnalyticsApplication application;
+    //Tracker mTracker;
     Utility mUtility;
 
     @Override
@@ -60,9 +65,18 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mContext = getApplicationContext();
+        //progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         textView = (TextView) findViewById(R.id.tv1);
-        gridView = (GridView) findViewById(R.id.grid_view);
+        gridView = (HeaderGridView) findViewById(R.id.grid_view);
+        linearLayout = (LinearLayout) findViewById(R.id.lL);
+
+
         imageOfTheDay= (ImageView) findViewById(R.id.image_of_the_day);
+        //linearLayout.removeView(imageOfTheDay);
+        //gridView.addHeaderView(imageOfTheDay);
+        //AnalyticsApplication application = (AnalyticsApplication) getApplication();
+       // mTracker = application.getDefaultTracker();
+
         registerForContextMenu(gridView);
 
         sharedPreferences = this.getSharedPreferences("hello", MODE_PRIVATE);
@@ -146,15 +160,20 @@ public class MainActivity extends AppCompatActivity {
             String displayname = intent.getStringExtra("Displayname");
             File file = new File(android.os.Environment.getExternalStorageDirectory() + "/Bing Images/", displayname);
             Log.d("Displayname", displayname + " " + file.getAbsolutePath());
+      //      progressBar.setVisibility(View.GONE);
             Glide.with(mContext)
                     .load(file.getAbsolutePath())
                     .centerCrop()
                     .into(imageOfTheDay);
+            imageOfTheDay.setVisibility(View.VISIBLE);
+            linearLayout.removeView(imageOfTheDay);
+            gridView.addHeaderView(imageOfTheDay);
             Collections.reverse(bitmapList);
             bitmapList.add(file.getAbsolutePath());
             Collections.reverse(bitmapList);
             Log.d("total files", String.valueOf(bitmapList.size()));
             adapter.notifyDataSetChanged();
+            //mTracker.send(new HitBuilders.EventBuilder().setCategory("Foreground").setAction("Share").build());
 
         }
     };
@@ -171,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
         IntentFilter iff = new IntentFilter(mUtility.ACTION);
         LocalBroadcastManager.getInstance(this).registerReceiver(onNotice, iff);
         textView.setText(sharedPreferences.getString("imageTitle", "No Image"));
+        //mTracker.send(new HitBuilders.EventBuilder().setCategory("Resume").setAction("Share").build());
     }
 
     @Override
@@ -221,10 +241,14 @@ public class MainActivity extends AppCompatActivity {
             String displayname = intent.getStringExtra("Displayname");
             File file = new File(android.os.Environment.getExternalStorageDirectory() + "/Bing Images/", displayname);
             Log.d("Displayname", displayname + " " + file.getAbsolutePath());
+        //    progressBar.setVisibility(View.GONE);
             Glide.with(mContext)
                     .load(file.getAbsolutePath())
                     .centerCrop()
                     .into(imageOfTheDay);
+            imageOfTheDay.setVisibility(View.VISIBLE);
+            linearLayout.removeView(imageOfTheDay);
+            gridView.addHeaderView(imageOfTheDay);
             Collections.reverse(bitmapList);
             bitmapList.add(file.getAbsolutePath());
             Collections.reverse(bitmapList);
@@ -249,6 +273,7 @@ public class MainActivity extends AppCompatActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
+        //mTracker.send(new HitBuilders.EventBuilder().setCategory("Start/Stop").setAction("Share").build());
         int id = item.getItemId();
         final String defValue = null;
         final String token = sharedPreferences.getString("TOKEN", defValue);
@@ -305,6 +330,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
+        //mTracker.send(new HitBuilders.EventBuilder().setCategory("Wallpaper").setAction("Share").build());
         AdapterView.AdapterContextMenuInfo adapterContextMenuInfo =
                 (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         View v = adapterContextMenuInfo.targetView;
@@ -345,26 +371,35 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             File image_of_the_day = new File(sdcard + "/Bing Images",sharedPreferences.getString("fileName",null));
+            Log.d(LOG_TAG,"IMage of the day found");
             Glide
                     .with(this)
                     .load(image_of_the_day.getAbsolutePath())
                     .centerCrop()
                     .into(imageOfTheDay);
+            linearLayout.removeView(imageOfTheDay);
+            gridView.addHeaderView(imageOfTheDay);
 
         } catch (Exception e) {
             Log.d(LOG_TAG,"Image of the day not found");
             e.printStackTrace();
         }
+
         Log.d("WWEtoken at strt","@@@"+token);
         if (token == null) {
             if (isNetworkAvailable() == true) {
+          //      progressBar.setVisibility(View.VISIBLE);
                 Log.d("WWE", "going through");
                 startService(new Intent(mContext, RegistrationIntentService.class));
             } else {
                 Toast toast = Toast.makeText(getApplicationContext(), "NetWork not available", Toast.LENGTH_SHORT);
                 Log.d("WWE", "Network Not available");
                 toast.show();
+                
             }
+        }
+        else {
+
         }
 
 
