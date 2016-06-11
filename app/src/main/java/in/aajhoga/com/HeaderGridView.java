@@ -17,6 +17,7 @@ import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ListAdapter;
 import android.widget.WrapperListAdapter;
+
 import java.util.ArrayList;
 /**
  * A {@link GridView} that supports adding header rows in a
@@ -111,6 +112,7 @@ public class HeaderGridView extends GridView {
     public void addHeaderView(View v) {
         addHeaderView(v, null, true);
     }
+
     public int getHeaderViewCount() {
         return mHeaderViewInfos.size();
     }

@@ -1,9 +1,6 @@
 package in.aajhoga.com;
 
-import android.content.Context;
-import android.util.Log;
-
-import com.google.android.gms.gcm.GcmPubSub;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.io.IOException;
 
@@ -11,12 +8,13 @@ import java.io.IOException;
  * Created by aprakhar on 5/2/2016.
  */
 public class SubscriptionHandler {
-    Context mContext;
 
-    public SubscriptionHandler(Context context) {
-        mContext=context;
+    public SubscriptionHandler() {
+        super();
     }
-    public void subscribeTopics(final String token) throws IOException {
+    public void subscribeTopics() throws IOException {
+        FirebaseMessaging.getInstance().subscribeToTopic("global");
+        /*
         new Thread(new Runnable() {
             public void run() {
                 Log.d("WWE",token);
@@ -29,9 +27,11 @@ public class SubscriptionHandler {
                 Log.d("WWE","registered");
             }
         }).start();
-
+    */
     }
-    public void unSubscribeTopics(final String token) throws IOException {
+    public void unSubscribeTopics() throws IOException {
+        FirebaseMessaging.getInstance().unsubscribeFromTopic("global");
+        /*
         new Thread(new Runnable() {
             public void run() {
                 Log.d("WWE",token);
@@ -43,7 +43,7 @@ public class SubscriptionHandler {
                 }
                 Log.d("WWE","Unregistered");
             }
-        }).start();
+        }).start();*/
     }
 
 }

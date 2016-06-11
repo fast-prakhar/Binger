@@ -2,13 +2,6 @@ package in.aajhoga.com;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
-
-import com.google.android.gms.gcm.GoogleCloudMessaging;
-import com.google.android.gms.iid.InstanceID;
 
 /**
  * Created by aprakhar on 4/20/2016.
@@ -28,6 +21,7 @@ public class RegistrationIntentService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        /*
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         try {
@@ -58,6 +52,7 @@ public class RegistrationIntentService extends IntentService {
 
         // Notify UI that registration has completed, so the progress indicator can be hidden.
         LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(getString(R.string.intent_name_REGISTRATION_COMPLETE)));
+        */
     }
 
 

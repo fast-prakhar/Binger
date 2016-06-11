@@ -86,23 +86,31 @@ public class Utility {
         editor.putInt(mRetryCount, 0);
     }
 
-    public boolean sendTokenToServer(String token) throws IOException {
-        OkHttpClient okHttpClient = new OkHttpClient();
-        RequestBody requestBody = new FormBody.Builder()
-                .add("regID",token)
-                .build();
-        Request request = new Request.Builder()
-                .url("https://helloman-1279.appspot.com")
-                .post(requestBody)
-                .build();
-        Response response = okHttpClient.newCall(request).execute();
-        Log.d("WWE RESPONSE",response.body().toString());
-        response.body().close();
+    public boolean sendTokenToServer(final String token) throws IOException {
+        new Thread(new Runnable() {
+            public void run() {
+                OkHttpClient okHttpClient = new OkHttpClient();
+                RequestBody requestBody = new FormBody.Builder()
+                        .add("regID", token)
+                        .build();
+                Request request = new Request.Builder()
+                        .url("https://helloman-1279.appspot.com")
+                        .post(requestBody)
+                        .build();
+                Response response = null;
+                try {
+                    response = okHttpClient.newCall(request).execute();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                Log.d("WWE RESPONSE", response.body().toString());
+                response.body().close();
+            }
+        }).start();
         return true;
     }
 
     public ArrayList<String> getAllFiles(){
-        //List<Bitmap> list = new ArrayList<>();
         ArrayList<String> f = new ArrayList<String>();// list of file paths
         File[] listFile;
         File file= new File(android.os.Environment.getExternalStorageDirectory(),"Bing Images");
@@ -277,7 +285,7 @@ public class Utility {
         b.setAutoCancel(true)
                 .setDefaults(Notification.DEFAULT_ALL)
                 .setWhen(System.currentTimeMillis())
-                .setSmallIcon(R.drawable.cast_ic_notification_1)
+                .setSmallIcon(R.drawable.my_logo)
                 .setContentTitle("Download Failed")
                 .setContentText("Image downloading failed after 5 attempts.")
                 .setDefaults(Notification.DEFAULT_LIGHTS| Notification.DEFAULT_SOUND)
@@ -299,7 +307,7 @@ public class Utility {
 
     public void setImageAsWallpaper(String fileName) throws IOException {
         File file=new File(android.os.Environment.getExternalStorageDirectory()+"/Bing Images/",fileName);
-        Log.d("Displayname from utilit",fileName +" " +  file.getAbsolutePath());
+        Log.d(LOG_TAG,"setImageAsWallpaper "+fileName + "    "+file.getAbsolutePath());
         Bitmap loadedImage = BitmapFactory.decodeFile(file.getAbsolutePath());
         DisplayMetrics displayMetrics = new DisplayMetrics();
         WindowManager windowManager = (WindowManager) context
@@ -313,6 +321,7 @@ public class Utility {
         wallpaperManager.suggestDesiredDimensions(width,height);
         wallpaperManager.setBitmap(loadedImage);
         Log.d("wwe", "supported");
+        Log.d(LOG_TAG,"Completed");
         if (!loadedImage.isRecycled()) loadedImage.recycle();
     }
 
@@ -344,7 +353,7 @@ public class Utility {
     private  void createNotification(String myImageTitle,String filename) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
             NotificationCompat.Builder mBuilder = (NotificationCompat.Builder) new NotificationCompat.Builder(context)
-                    .setSmallIcon(R.drawable.cast_ic_notification_2)
+                    .setSmallIcon(R.drawable.my_logo)
                     .setContentTitle("GCM")
                     .setAutoCancel(true)
                     .setContentText(myImageTitle);

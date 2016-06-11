@@ -30,6 +30,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,8 +74,9 @@ public class MainActivity extends AppCompatActivity {
 
 
         imageOfTheDay= (ImageView) findViewById(R.id.image_of_the_day);
-        //linearLayout.removeView(imageOfTheDay);
-        //gridView.addHeaderView(imageOfTheDay);
+        imageOfTheDay.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.my_logo));
+        linearLayout.removeView(imageOfTheDay);
+        gridView.addHeaderView(imageOfTheDay);
         //AnalyticsApplication application = (AnalyticsApplication) getApplication();
        // mTracker = application.getDefaultTracker();
 
@@ -86,7 +89,11 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, rCode);
         }
         else {
-            toBeExecutedEveryTime();
+            try {
+                toBeExecutedEveryTime();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             //func();
         }
         /*
@@ -154,24 +161,25 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
 
 
-            Log.d("WWE", "On Receive called");
+            Log.d(LOG_TAG,"BroadcastReceiver On Receive Called");
             String val = intent.getStringExtra("Filename");
             textView.setText(val);
             String displayname = intent.getStringExtra("Displayname");
             File file = new File(android.os.Environment.getExternalStorageDirectory() + "/Bing Images/", displayname);
-            Log.d("Displayname", displayname + " " + file.getAbsolutePath());
+            Log.d(LOG_TAG, "File sent to BroadCastReceiver "+displayname + " " + file.getAbsolutePath());
       //      progressBar.setVisibility(View.GONE);
             Glide.with(mContext)
                     .load(file.getAbsolutePath())
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true)
                     .centerCrop()
                     .into(imageOfTheDay);
-            imageOfTheDay.setVisibility(View.VISIBLE);
+            //imageOfTheDay.setVisibility(View.VISIBLE);
             linearLayout.removeView(imageOfTheDay);
             gridView.addHeaderView(imageOfTheDay);
-            Collections.reverse(bitmapList);
-            bitmapList.add(file.getAbsolutePath());
-            Collections.reverse(bitmapList);
-            Log.d("total files", String.valueOf(bitmapList.size()));
+//            Collections.reverse(bitmapList);
+//            Collections.reverse(bitmapList);
+            Log.d(LOG_TAG,"Total Files"+ String.valueOf(bitmapList.size()));
             adapter.notifyDataSetChanged();
             //mTracker.send(new HitBuilders.EventBuilder().setCategory("Foreground").setAction("Share").build());
 
@@ -181,6 +189,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        Log.d(LOG_TAG,"Paused");
         LocalBroadcastManager.getInstance(this).unregisterReceiver(onNotice);
     }
 
@@ -190,24 +199,31 @@ public class MainActivity extends AppCompatActivity {
         IntentFilter iff = new IntentFilter(mUtility.ACTION);
         LocalBroadcastManager.getInstance(this).registerReceiver(onNotice, iff);
         textView.setText(sharedPreferences.getString("imageTitle", "No Image"));
+        Log.d(LOG_TAG,"Resumed ");
         //mTracker.send(new HitBuilders.EventBuilder().setCategory("Resume").setAction("Share").build());
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        Log.d(LOG_TAG,"Permission Request Start");
         switch (requestCode) {
             case rCode: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    toBeExecutedEveryTime();
-                    //new loadImage().execute();
-                    //func();
+                    Log.d(LOG_TAG,"Permission Granted");
+                    try {
+                        toBeExecutedEveryTime();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
 
                 } else {
+                    Log.d(LOG_TAG,"Permission Not Granted");
                     Toast t = Toast.makeText(getApplicationContext(), "Pls give permission", Toast.LENGTH_SHORT);
                     t.show();
                     new Timer().schedule(new TimerTask() {
                         @Override
                         public void run() {
+                            Log.d(LOG_TAG,"Finishing Activity");
                             finish();
                         }
                     }, 1000);
@@ -223,6 +239,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... params) {
             bitmapList = mUtility.getAllFiles();
+            if (bitmapList.size() > 0)
+                bitmapList.remove(0);
             adapter = new wallpaperAdapter(mContext, bitmapList);
             return null;
         }
@@ -237,22 +255,24 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         if (intent.getStringExtra("Displayname") != null) {
-            Log.d("WWE", "IN New Intent");
+            Log.d(LOG_TAG, "onNewIntent");
             String displayname = intent.getStringExtra("Displayname");
             File file = new File(android.os.Environment.getExternalStorageDirectory() + "/Bing Images/", displayname);
-            Log.d("Displayname", displayname + " " + file.getAbsolutePath());
+            Log.d(LOG_TAG, "File sent to onNewIntent"+displayname + " " + file.getAbsolutePath());
         //    progressBar.setVisibility(View.GONE);
             Glide.with(mContext)
                     .load(file.getAbsolutePath())
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true)
                     .centerCrop()
                     .into(imageOfTheDay);
-            imageOfTheDay.setVisibility(View.VISIBLE);
-            linearLayout.removeView(imageOfTheDay);
-            gridView.addHeaderView(imageOfTheDay);
+            //imageOfTheDay.setVisibility(View.VISIBLE);
+            //linearLayout.removeView(imageOfTheDay);
+            //gridView.addHeaderView(imageOfTheDay);
             Collections.reverse(bitmapList);
             bitmapList.add(file.getAbsolutePath());
             Collections.reverse(bitmapList);
-            Log.d("total files", String.valueOf(bitmapList.size()));
+            Log.d(LOG_TAG,"Total Files"+ String.valueOf(bitmapList.size()));
             adapter.notifyDataSetChanged();
         }
         super.onNewIntent(intent);
@@ -264,7 +284,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.helper_menu, menu);
-        Log.d("wwe", "options menu");
+        Log.d(LOG_TAG, "onCreateOptionsMenu Created");
         return true;
     }
 
@@ -283,15 +303,15 @@ public class MainActivity extends AppCompatActivity {
             if (item.getTitle().toString().compareTo("Stop Service") == 0) {
                 if (token != null) {
                     try {
-                        new SubscriptionHandler(mContext).unSubscribeTopics(token);
+                        new SubscriptionHandler().unSubscribeTopics();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 } else {
-                    Log.d("WWE", "Not Running");
+                    Log.d(LOG_TAG,"onOptionsItemSelected Error Not running");
                 }
                 item.setTitle("Start Service");
-                Log.d("WWE", "stop chnged");
+                Log.d(LOG_TAG,"onOptionsItemSelected Start TO Stopped Unsubscribed");
                /* new Timer().schedule(new TimerTask() {
                     @Override
                     public void run() {
@@ -301,7 +321,7 @@ public class MainActivity extends AppCompatActivity {
                 }, 1500);*/
             } else {
                 try {
-                    new SubscriptionHandler(getApplicationContext()).subscribeTopics(token);
+                    new SubscriptionHandler().subscribeTopics();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -313,7 +333,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }, 1500);*/
                 item.setTitle("Stop Service");
-                Log.d("WWE", "start chnged");
+                Log.d(LOG_TAG,"onOptionsItemSelected Stop TO Start Subscribed");
             }
             return true;
         }
@@ -325,7 +345,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreateContextMenu(menu, v, menuInfo);
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.cntxt_menu, menu);
-        Log.d("WWE", "CONTEXT MENU CREATED");
+        Log.d(LOG_TAG,"onCreateContextMenu Created");
     }
 
     @Override
@@ -336,10 +356,11 @@ public class MainActivity extends AppCompatActivity {
         View v = adapterContextMenuInfo.targetView;
         int clickedPosition = adapterContextMenuInfo.position;
         String val = (String) gridView.getItemAtPosition(clickedPosition);
-        Log.d("WWE clicked path", val);
+        Log.d(LOG_TAG,"onContextItemSelected File path Clicked is "+val);
         String[] parts = val.split("/");
         val = parts[parts.length - 1];
-        Log.d("WWE clicked path", val);
+        Log.d(LOG_TAG,"onContextItemSelected File path Clicked is After split"+val);
+
         final String finalVal = val;
         new Thread(new Runnable() {
             public void run() {
@@ -350,12 +371,13 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }).start();
-        Log.d("WWE", "Set using long click listener");
+        Log.d(LOG_TAG,"onContextItemSelected  Image changed using ContextMenu");
         return super.onContextItemSelected(item);
     }
 
 
-    public void toBeExecutedEveryTime(){
+    public void toBeExecutedEveryTime() throws IOException {
+        Log.d(LOG_TAG,"toBeExecutedEveryTime Inside");
         mUtility = new Utility(this);
         retryCount = getSharedPreferences(mUtility.mRetryCount, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = retryCount.edit();
@@ -371,34 +393,43 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             File image_of_the_day = new File(sdcard + "/Bing Images",sharedPreferences.getString("fileName",null));
-            Log.d(LOG_TAG,"IMage of the day found");
+            Log.d(LOG_TAG,"toBeExecutedEveryTime IMage of the day found");
             Glide
                     .with(this)
                     .load(image_of_the_day.getAbsolutePath())
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true)
                     .centerCrop()
                     .into(imageOfTheDay);
             linearLayout.removeView(imageOfTheDay);
             gridView.addHeaderView(imageOfTheDay);
 
         } catch (Exception e) {
-            Log.d(LOG_TAG,"Image of the day not found");
+            Log.d(LOG_TAG,"toBeExecutedEveryTime Image of the day not found");
             e.printStackTrace();
         }
 
-        Log.d("WWEtoken at strt","@@@"+token);
         if (token == null) {
             if (isNetworkAvailable() == true) {
           //      progressBar.setVisibility(View.VISIBLE);
-                Log.d("WWE", "going through");
-                startService(new Intent(mContext, RegistrationIntentService.class));
+                Log.d(LOG_TAG, "toBeExecutedEveryTime Network Available");
+                String tok = FirebaseInstanceId.getInstance().getToken();
+                Log.d(LOG_TAG,"toBeExecutedEveryTime FCM token "+tok);
+                try {
+                    registerToken(tok);
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
             } else {
                 Toast toast = Toast.makeText(getApplicationContext(), "NetWork not available", Toast.LENGTH_SHORT);
-                Log.d("WWE", "Network Not available");
+                Log.d(LOG_TAG, "toBeExecutedEveryTime Network Not Available");
                 toast.show();
                 
             }
         }
         else {
+            Log.d(LOG_TAG, "toBeExecutedEveryTime Token is not null");
 
         }
 
@@ -413,6 +444,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+    }
+    private void registerToken(String refreshedToken) throws IOException {
+        SharedPreferences.Editor editor = getSharedPreferences("hello",MODE_PRIVATE).edit();
+        editor.putString("TOKEN",refreshedToken);
+        editor.commit();
+
+        new SubscriptionHandler().subscribeTopics();
+        if (new Utility().sendTokenToServer(refreshedToken) == true){
+            Log.d(LOG_TAG," registerToken Token sent to server");
+        }
+        else {
+            Log.d(LOG_TAG,"registerToken Token not sent to server");
+        }
 
     }
 }

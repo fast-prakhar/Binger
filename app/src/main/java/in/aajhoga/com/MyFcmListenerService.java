@@ -1,19 +1,21 @@
 package in.aajhoga.com;
 
 import android.content.SharedPreferences;
-import android.os.Bundle;
 import android.util.Log;
 
-import com.google.android.gms.gcm.GcmListenerService;
+import com.google.firebase.messaging.FirebaseMessagingService;
+import com.google.firebase.messaging.RemoteMessage;
+
 import java.util.concurrent.CountDownLatch;
 
 /**
  * Created by aprakhar on 4/20/2016.
  */
-public class MyGcmListenerService extends GcmListenerService {
+public class MyFcmListenerService extends FirebaseMessagingService {
     private static CountDownLatch _latch;
     private static int N = 3;
     private SharedPreferences sp;
+    private String LOG_TAG=this.getClass().getSimpleName();
     @Override
     public void onCreate() {
         /*
@@ -27,24 +29,23 @@ public class MyGcmListenerService extends GcmListenerService {
     }
 
     @Override
-    public void onMessageReceived(String from, Bundle data) {
+    public void onMessageReceived(RemoteMessage message) {
+        Log.d(LOG_TAG,"onMessageReceived Message Received");
         sp = this.getSharedPreferences("hello", MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
-        Log.d("WWE", "KUCH AAYA");
         int c = 1;
         String myJsonstring = "";
         String myImageTitle = "";
-        myJsonstring = data.getString("downloadURL");
-        myImageTitle = data.getString("Title");
+        myJsonstring = message.getData().get("downloadURL");
+        myImageTitle=message.getData().get("Title");
         editor.putString("URL", myJsonstring);
 
         editor.apply();
-        Log.d("wwe",1+"");
         String z=null;
         _latch = new CountDownLatch(N);
         final Utility t = new Utility(getApplicationContext());
         new Utility(getApplicationContext()).downloadImage(myJsonstring, myImageTitle);
-        /*
+/*
         try {
             for (int i = 0; i < N; i++) {
                 Log.d("wwe","in for loop");
@@ -73,7 +74,7 @@ public class MyGcmListenerService extends GcmListenerService {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        */
+*/
     }
 
 

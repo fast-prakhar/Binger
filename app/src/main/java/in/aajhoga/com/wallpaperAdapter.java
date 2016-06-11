@@ -10,6 +10,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.ArrayList;
 
@@ -58,6 +59,8 @@ public class wallpaperAdapter extends BaseAdapter {
         Glide.with(mContext)
                 .load(list.get(position))
                 .centerCrop()
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(true)
                 //.signature(new StringSignature(String.valueOf(System.currentTimeMillis())))
                 .into(viewHolder.imageView);
         //Bitmap myBitmap = BitmapFactory.decodeFile(list.get(position));
