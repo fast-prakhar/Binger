@@ -1,6 +1,7 @@
 package in.aajhoga.com;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -35,11 +36,12 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SetWallpaperListener {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final int MAX_RETRY_LIMIT = 5;
     final int rCode = 3;
@@ -51,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private GridView gridView;
     ScrollView mScrollView;
     private ImageView imageOfTheDay;
+    ProgressDialog dialog;
 
 
     //private ProgressBar progressBar;
@@ -78,12 +81,25 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String path = bitmapList.get(position);
+
+                Intent intent = new Intent(MainActivity.this, ViewSelectedImage.class);
+                intent.putExtra("image", bitmapList.get(position));
+                startActivity(intent);
+
+            }
+        });
         imageOfTheDay= (ImageView) findViewById(R.id.image_of_the_day);
         imageOfTheDay.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.my_logo));
         //AnalyticsApplication application = (AnalyticsApplication) getApplication();
        // mTracker = application.getDefaultTracker();
 
         registerForContextMenu(gridView);
+
+        mUtility = new Utility(this);
 
         sharedPreferences = this.getSharedPreferences("hello", MODE_PRIVATE);
 
@@ -99,6 +115,10 @@ public class MainActivity extends AppCompatActivity {
             }
             //func();
         }
+
+        dialog = new ProgressDialog(MainActivity.this);
+        dialog.setMessage("Please Wait..!!");
+
         /*
         mUtility = new Utility(this);
         retryCount = getSharedPreferences(mUtility.mRetryCount, Context.MODE_PRIVATE);
@@ -231,6 +251,12 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         }
+    }
+
+    @Override
+    public void onWallpaperSettingCompleted() {
+        dialog.dismiss();
+        Toast.makeText(MainActivity.this, "Image set as Wallpaper", Toast.LENGTH_SHORT).show();
     }
 
 
@@ -371,16 +397,12 @@ public class MainActivity extends AppCompatActivity {
         val = parts[parts.length - 1];
         Log.d(LOG_TAG,"onContextItemSelected File path Clicked is After split"+val);
 
+        dialog.show();
         final String finalVal = val;
-        new Thread(new Runnable() {
-            public void run() {
-                try {
-                    new Utility(mContext).setImageAsWallpaper(finalVal);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
+        SetWallpaperOnUserAction task = new SetWallpaperOnUserAction(this);
+        task.setWallpaperListener(this);
+        task.execute(finalVal);
+
         Log.d(LOG_TAG,"onContextItemSelected  Image changed using ContextMenu");
         return super.onContextItemSelected(item);
     }
@@ -388,7 +410,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void toBeExecutedEveryTime() throws IOException {
         Log.d(LOG_TAG,"toBeExecutedEveryTime Inside");
-        mUtility = new Utility(this);
         retryCount = getSharedPreferences(mUtility.mRetryCount, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = retryCount.edit();
         editor.putInt(mUtility.mRetryCount, 0);

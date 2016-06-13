@@ -4,6 +4,7 @@ import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +13,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
@@ -20,6 +22,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -332,8 +335,6 @@ public class Utility {
         wallpaperManager.setWallpaperOffsetSteps(1, 1);
         wallpaperManager.suggestDesiredDimensions(width, height);
         wallpaperManager.setBitmap(loadedImage);
-        Log.d("wwe", "supported");
-        Log.d(LOG_TAG, "Completed");
         if (!loadedImage.isRecycled()) loadedImage.recycle();
     }
 
@@ -401,7 +402,6 @@ public class Utility {
 
         return false;
     }
-
 
     public static void log(final String msg) {
 

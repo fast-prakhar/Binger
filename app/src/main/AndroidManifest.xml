@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="in.aajhoga.com">
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.SET_WALLPAPER" />
-    <uses-permission android:name="android.permission.SET_WALLPAPER_HINTS"></uses-permission>
-    <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+    <uses-permission android:name="android.permission.SET_WALLPAPER_HINTS" />
+
+    <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
 
     <application
         android:allowBackup="false"
@@ -14,10 +16,10 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".SplashScreen"
-            android:noHistory="true"
-            android:launchMode="singleTop">
-
+        <activity
+            android:name=".SplashScreen"
+            android:launchMode="singleTop"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -26,10 +28,9 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name" >
-        </activity>
+            android:label="@string/app_name"></activity>
 
-<!--
+        <!--
         <receiver
             android:name="com.google.android.gms.gcm.GcmReceiver"
             android:exported="true"
@@ -41,7 +42,7 @@
                 <category android:name="com.techcasita.android.push" />
             </intent-filter>
         </receiver>
--->
+        -->
         <service
             android:name=".MyFcmListenerService"
             android:exported="false">
@@ -57,6 +58,9 @@
             </intent-filter>
         </service>
 
+        <activity android:name=".ViewSelectedImage"
+            android:screenOrientation="portrait">
+        </activity>
     </application>
 
 </manifest>

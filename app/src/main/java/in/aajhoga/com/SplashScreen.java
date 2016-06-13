@@ -34,9 +34,11 @@ public class SplashScreen extends AppCompatActivity {
 
                 if (ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(SplashScreen.this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, rCode);
+                } else {
+                    startActivity(new Intent(SplashScreen.this,MainActivity.class));
                 }
             }
-        },1500);
+        },1000);
     }
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -49,7 +51,7 @@ public class SplashScreen extends AppCompatActivity {
 
                 } else {
                     Log.d(LOG_TAG,"Permission Not Granted");
-                    Toast t = Toast.makeText(getApplicationContext(), "Pls give permission", Toast.LENGTH_SHORT);
+                    Toast t = Toast.makeText(getApplicationContext(), "Please grant permission", Toast.LENGTH_SHORT);
                     t.show();
                     new Timer().schedule(new TimerTask() {
                         @Override

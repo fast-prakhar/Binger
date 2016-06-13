@@ -2,4 +2,19 @@
     <string name="app_name">Binger</string>
     <string name="pref_key_SENT_TOKEN_TO_SERVER">key sent token to server</string>
     <string name="intent_name_REGISTRATION_COMPLETE">Reg complete</string>
+    <string name="image_of_the_day_on"><![CDATA[<b>Image of the day on : </b> %1$s]]>"</string>
+    <string-array name="Month">
+        <item>January</item>
+        <item>February</item>
+        <item>March</item>
+        <item>April</item>
+        <item>May</item>
+        <item>June</item>
+        <item>July</item>
+        <item>August</item>
+        <item>September</item>
+        <item>October</item>
+        <item>November</item>
+        <item>December</item>
+    </string-array>
 </resources>
