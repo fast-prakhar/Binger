@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scroll_view"
     android:layout_width="match_parent"
-    android:fillViewport="true"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:fillViewport="true">
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/lL"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/white"
+        android:layout_height="match_parent"
         android:orientation="vertical"
         tools:context="in.aajhoga.com.MainActivity">
 
@@ -20,9 +20,9 @@
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:layout_gravity="center" />
-    
-    
-    
+
+
+
         <Button
                 android:layout_width="120dp"
                 android:layout_height="50dp"
@@ -41,7 +41,7 @@
                 android:text="Stop "
                 android:id="@+id/stop"
                 android:layout_gravity="center_horizontal" />
-    
+
 
         <TextView
             android:id="@+id/tv2"
@@ -67,44 +67,47 @@
             android:indeterminateTint="#ffd6d7d7"
             android:id="@+id/progress_bar"
             android:layout_gravity="center_horizontal" />-->
-        <ImageView
-            android:id="@+id/image_of_the_day"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:background="@android:color/black"
-            android:layout_height="200dp"
-            android:src="@drawable/my_logo"
-            android:layout_gravity="center_horizontal"
-            android:scaleType="centerCrop"
-            android:scrollbars="vertical"/>
+            android:layout_height="200dp">
 
+            <ImageView
+                android:id="@+id/image_of_the_day"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_gravity="center_horizontal"
+                android:background="@android:color/black"
+                android:scaleType="centerCrop"
+                android:scrollbars="vertical"
+                android:src="@drawable/my_logo" />
 
-        <TextView
-            android:id="@+id/tv1"
-            android:layout_width="250dp"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            android:layout_gravity="center_horizontal"
-            android:paddingTop="10dp"
-            android:text="hfjdhfkjdhhs gf  "
-            android:textColor="#FFFFFF"
-            android:textSize="20dp"
-            android:textStyle="bold"
-            android:visibility="gone" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:gravity="center"
+                android:layout_gravity="bottom"
+                android:text="IMAGE OF THE DAY"
+                android:textColor="@android:color/white"
+                android:background="#FF686464"
+                android:alpha="0.8"
+                android:textStyle="italic"/>
+        </FrameLayout>
 
-        <in.aajhoga.com.HeaderGridView
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:elevation="2dp"
+            android:background="@drawable/shadow"></View>
+
+        <GridView
             android:id="@+id/grid_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#B6B6B6"
             android:fastScrollEnabled="true"
             android:horizontalSpacing="1dp"
             android:numColumns="3"
             android:stretchMode="columnWidth"
-            android:verticalSpacing="1dp">
-
-        </in.aajhoga.com.HeaderGridView>
-
-
+            android:verticalSpacing="1dp"></GridView>
     </LinearLayout>
 </ScrollView>

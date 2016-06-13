@@ -3,6 +3,7 @@ package in.aajhoga.com;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
 
 import java.io.IOException;
@@ -14,7 +15,7 @@ public class MyInstanceIDListenerService extends FirebaseInstanceIdService {
     private String LOG_TAG = this.getClass().getSimpleName();
     @Override
     public void onTokenRefresh() {
-        /*
+
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
         Log.d(MyInstanceIDListenerService.class.getSimpleName(), "Refreshed token: " + refreshedToken);
         try {
@@ -22,7 +23,7 @@ public class MyInstanceIDListenerService extends FirebaseInstanceIdService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        */
+
         // TODO: Implement this method to send any registration to your app's servers.
     }
 

@@ -2,12 +2,20 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#28ea7c"
-    android:backgroundTint="#da1b77">
+    android:background="#000000">
     <ImageView
         android:id="@+id/splash_image_view"
         android:layout_width="150sp"
         android:src="@drawable/my_logo"
         android:layout_height="150sp"
         android:layout_centerInParent="true"/>
+
+    <TextView
+        android:layout_below="@id/splash_image_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:textSize="28sp"
+        android:textColor="@android:color/white"
+        android:text="Binger"/>
 </RelativeLayout>

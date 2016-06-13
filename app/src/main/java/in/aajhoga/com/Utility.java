@@ -51,12 +51,12 @@ import okhttp3.Response;
  * Created by aprakhar on 5/2/2016.
  */
 public class Utility {
-    private CountDownLatch _latch=null;
+    private CountDownLatch _latch = null;
     private static final int MAX_RETRY_LIMIT = 5;
     private static final String LOG_TAG = Utility.class.getSimpleName();
     private SharedPreferences sp, retryCount;
     private Context context;
-    public static final String ACTION="hello";
+    public static final String ACTION = "hello";
     public String mRetryCount = "count";
 
     private String imageUrl;
@@ -67,17 +67,18 @@ public class Utility {
 
     }
 
-    public void initLatch(CountDownLatch _latch){
-        this._latch=_latch;
+    public void initLatch(CountDownLatch _latch) {
+        this._latch = _latch;
     }
-    public Utility(Context context){
-        this.context=context;
+
+    public Utility(Context context) {
+        this.context = context;
         init(context);
     }
 
-    public Utility(Context context,CountDownLatch _latch){
-        this.context=context;
-        this._latch=_latch;
+    public Utility(Context context, CountDownLatch _latch) {
+        this.context = context;
+        this._latch = _latch;
     }
 
     private void init(Context mContext) {
@@ -89,31 +90,44 @@ public class Utility {
     public boolean sendTokenToServer(final String token) throws IOException {
         new Thread(new Runnable() {
             public void run() {
-                OkHttpClient okHttpClient = new OkHttpClient();
-                RequestBody requestBody = new FormBody.Builder()
-                        .add("regID", token)
-                        .build();
-                Request request = new Request.Builder()
-                        .url("https://helloman-1279.appspot.com")
-                        .post(requestBody)
-                        .build();
                 Response response = null;
                 try {
+                    if (token == null) {
+                        Log.d (LOG_TAG, "token is null");
+                    }
+                    OkHttpClient okHttpClient = new OkHttpClient();
+                    RequestBody requestBody = new FormBody.Builder()
+                            .add("regID", token)
+                            .build();
+
+
+                    Request request = new Request.Builder()
+                            .url("https://helloman-1279.appspot.com")
+                            .post(requestBody)
+                            .build();
+
+                    if (requestBody == null) {
+                        Log.d (LOG_TAG, "request body is null");
+                    }
                     response = okHttpClient.newCall(request).execute();
                 } catch (IOException e) {
                     e.printStackTrace();
+                    Log.d("WWE RESPONSE", response.body().toString());
+                    response.body().close();
                 }
-                Log.d("WWE RESPONSE", response.body().toString());
-                response.body().close();
+
             }
+
+
         }).start();
+
         return true;
     }
 
-    public ArrayList<String> getAllFiles(){
+    public ArrayList<String> getAllFiles() {
         ArrayList<String> f = new ArrayList<String>();// list of file paths
         File[] listFile;
-        File file= new File(android.os.Environment.getExternalStorageDirectory(),"Bing Images");
+        File file = new File(android.os.Environment.getExternalStorageDirectory(), "Bing Images");
 
         if (file.isDirectory()) {
             listFile = file.listFiles();
@@ -129,17 +143,16 @@ public class Utility {
                 Collections.reverse(f);
             }
             return f;
-        }
-        else {
+        } else {
             return f;
         }
 
     }
 
-    public String downloadImage(String myJsonstring, final String myImageTitle){
+    public String downloadImage(String myJsonstring, final String myImageTitle) {
         imageUrl = myJsonstring;
         imageTitle = myImageTitle;
-        sp=this.context.getSharedPreferences("hello",Context.MODE_PRIVATE);
+        sp = this.context.getSharedPreferences("hello", Context.MODE_PRIVATE);
         final SharedPreferences.Editor editor = sp.edit();
         String imageMd5;
         String spImageMd5;
@@ -170,7 +183,7 @@ public class Utility {
                     public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
                         super.onLoadingFailed(imageUri, view, failReason);
                         // if(failReason.getCause() != null)
-                        editor.putInt("downloadStatus",0);
+                        editor.putInt("downloadStatus", 0);
                         editor.apply();
                         Log.d("WWE", "Download failed");
                         //_latch.countDown();
@@ -213,8 +226,8 @@ public class Utility {
                             Log.d("WWE ERROR", "Not changed");
                             e.printStackTrace();
                         }
-                        editor.putInt("downloadStatus",1);
-                        editor.putString("fileName",filename);
+                        editor.putInt("downloadStatus", 1);
+                        editor.putString("fileName", filename);
                         editor.apply();
 
                         try {
@@ -223,14 +236,13 @@ public class Utility {
                             e.printStackTrace();
                         }
 
-                        if(isInForeground() == true){
+                        if (isInForeground() == true) {
                             boolean b = LocalBroadcastManager.getInstance(context).sendBroadcast(I);
                             Log.d(LOG_TAG, String.valueOf(b));
-                            Log.d(LOG_TAG,"in foreground");
-                        }
-                        else {
-                            createNotification(myImageTitle,filename);
-                            Log.d(LOG_TAG,"in background");
+                            Log.d(LOG_TAG, "in foreground");
+                        } else {
+                            createNotification(myImageTitle, filename);
+                            Log.d(LOG_TAG, "in background");
                         }
 
 
@@ -238,7 +250,7 @@ public class Utility {
                     }
                 });
             } catch (Exception e) {
-                Log.d(LOG_TAG,"Every error");
+                Log.d(LOG_TAG, "Every error");
                 e.printStackTrace();
             }
 
@@ -262,7 +274,7 @@ public class Utility {
                 if (e != "false") {
                     try {
                         setImageAsWallpaper(e);
-                        Log.d("wwe","setted from retrier");
+                        Log.d("wwe", "setted from retrier");
                     } catch (IOException p) {
                         p.printStackTrace();
                     }
@@ -271,7 +283,7 @@ public class Utility {
             count++;
             editor.putInt(mRetryCount, count);
             editor.commit();
-        }  else {
+        } else {
             generateNotification();
         }
     }
@@ -285,10 +297,10 @@ public class Utility {
         b.setAutoCancel(true)
                 .setDefaults(Notification.DEFAULT_ALL)
                 .setWhen(System.currentTimeMillis())
-                .setSmallIcon(R.drawable.my_logo)
+                .setSmallIcon(R.drawable.applogo)
                 .setContentTitle("Download Failed")
                 .setContentText("Image downloading failed after 5 attempts.")
-                .setDefaults(Notification.DEFAULT_LIGHTS| Notification.DEFAULT_SOUND)
+                .setDefaults(Notification.DEFAULT_LIGHTS | Notification.DEFAULT_SOUND)
                 .setContentIntent(contentIntent)
                 .setContentInfo("Info");
 
@@ -306,42 +318,43 @@ public class Utility {
 
 
     public void setImageAsWallpaper(String fileName) throws IOException {
-        File file=new File(android.os.Environment.getExternalStorageDirectory()+"/Bing Images/",fileName);
-        Log.d(LOG_TAG,"setImageAsWallpaper "+fileName + "    "+file.getAbsolutePath());
+        File file = new File(android.os.Environment.getExternalStorageDirectory() + "/Bing Images/", fileName);
+        Log.d(LOG_TAG, "setImageAsWallpaper " + fileName + "    " + file.getAbsolutePath());
         Bitmap loadedImage = BitmapFactory.decodeFile(file.getAbsolutePath());
         DisplayMetrics displayMetrics = new DisplayMetrics();
         WindowManager windowManager = (WindowManager) context
                 .getSystemService(Context.WINDOW_SERVICE);
         windowManager.getDefaultDisplay().getMetrics(displayMetrics);
-        int height=displayMetrics.heightPixels;
-        int width=displayMetrics.widthPixels;
+        int height = displayMetrics.heightPixels;
+        int width = displayMetrics.widthPixels;
         //loadedImage = Bitmap.createScaledBitmap(loadedImage, width, height, false);
         WallpaperManager wallpaperManager = WallpaperManager.getInstance(context);
-        wallpaperManager.setWallpaperOffsetSteps(1,1);
-        wallpaperManager.suggestDesiredDimensions(width,height);
+        wallpaperManager.setWallpaperOffsetSteps(1, 1);
+        wallpaperManager.suggestDesiredDimensions(width, height);
         wallpaperManager.setBitmap(loadedImage);
         Log.d("wwe", "supported");
-        Log.d(LOG_TAG,"Completed");
+        Log.d(LOG_TAG, "Completed");
         if (!loadedImage.isRecycled()) loadedImage.recycle();
     }
 
     @NonNull
-    private static String md5(String s) { try {
+    private static String md5(String s) {
+        try {
 
-        // Create MD5 Hash
-        MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
-        digest.update(s.getBytes());
-        byte messageDigest[] = digest.digest();
+            // Create MD5 Hash
+            MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
+            digest.update(s.getBytes());
+            byte messageDigest[] = digest.digest();
 
-        // Create Hex String
-        StringBuffer hexString = new StringBuffer();
-        for (int i=0; i<messageDigest.length; i++)
-            hexString.append(Integer.toHexString(0xFF & messageDigest[i]));
-        return hexString.toString();
+            // Create Hex String
+            StringBuffer hexString = new StringBuffer();
+            for (int i = 0; i < messageDigest.length; i++)
+                hexString.append(Integer.toHexString(0xFF & messageDigest[i]));
+            return hexString.toString();
 
-    } catch (NoSuchAlgorithmException e) {
-        e.printStackTrace();
-    }
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
         return "";
 
     }
@@ -350,25 +363,29 @@ public class Utility {
         void onDownloadComplete();
     }
 
-    private  void createNotification(String myImageTitle,String filename) {
+    private void createNotification(String myImageTitle, String filename) {
+        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.my_logo);
+        Log.d(LOG_TAG, "creating notificaiton");
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
             NotificationCompat.Builder mBuilder = (NotificationCompat.Builder) new NotificationCompat.Builder(context)
-                    .setSmallIcon(R.drawable.my_logo)
-                    .setContentTitle("GCM")
+                    .setLargeIcon(bitmap)
+                    .setSmallIcon(R.drawable.applogo)
+                    .setContentTitle("Binger")
                     .setAutoCancel(true)
                     .setContentText(myImageTitle);
-            Intent I = new Intent(context,MainActivity.class);
+            Intent I = new Intent(context, MainActivity.class);
             I.putExtra("Displayname", filename);
-            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0,I, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, I, PendingIntent.FLAG_UPDATE_CURRENT);
             mBuilder.setContentIntent(pendingIntent);
 
             NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             notificationManager.notify(7, mBuilder.build());
 
         }
+        bitmap.recycle();
     }
 
-    public  boolean isInForeground() {
+    public boolean isInForeground() {
         ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.RunningAppProcessInfo> runningProcesses = am.getRunningAppProcesses();
         for (ActivityManager.RunningAppProcessInfo processInfo : runningProcesses) {
@@ -386,8 +403,7 @@ public class Utility {
     }
 
 
-    public static void log(final String msg)
-    {
+    public static void log(final String msg) {
 
         final Throwable t = new Throwable();
         final StackTraceElement[] elements = t.getStackTrace();

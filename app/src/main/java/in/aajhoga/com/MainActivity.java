@@ -21,17 +21,16 @@ import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.widget.ScrollView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,22 +43,21 @@ public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final int MAX_RETRY_LIMIT = 5;
     final int rCode = 3;
-    private Button start;
-    private Button stop;
-    private TextView textView;
     private Context mContext;
     private ArrayList<String> bitmapList;
     private SharedPreferences sharedPreferences;
     private SharedPreferences retryCount;
     private wallpaperAdapter adapter;
-    private HeaderGridView gridView;
+    private GridView gridView;
+    ScrollView mScrollView;
     private ImageView imageOfTheDay;
-    private LinearLayout linearLayout;
+
 
     //private ProgressBar progressBar;
     //AnalyticsApplication application;
     //Tracker mTracker;
     Utility mUtility;
+    private int mTotalRows;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,15 +66,20 @@ public class MainActivity extends AppCompatActivity {
 
         mContext = getApplicationContext();
         //progressBar = (ProgressBar) findViewById(R.id.progress_bar);
-        textView = (TextView) findViewById(R.id.tv1);
-        gridView = (HeaderGridView) findViewById(R.id.grid_view);
-        linearLayout = (LinearLayout) findViewById(R.id.lL);
 
+        mScrollView = (ScrollView) findViewById(R.id.scroll_view);
+        mScrollView.fullScroll(View.FOCUS_UP);
+        gridView = (GridView) findViewById(R.id.grid_view);
+
+        gridView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return false;
+            }
+        });
 
         imageOfTheDay= (ImageView) findViewById(R.id.image_of_the_day);
         imageOfTheDay.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.my_logo));
-        linearLayout.removeView(imageOfTheDay);
-        gridView.addHeaderView(imageOfTheDay);
         //AnalyticsApplication application = (AnalyticsApplication) getApplication();
        // mTracker = application.getDefaultTracker();
 
@@ -163,7 +166,6 @@ public class MainActivity extends AppCompatActivity {
 
             Log.d(LOG_TAG,"BroadcastReceiver On Receive Called");
             String val = intent.getStringExtra("Filename");
-            textView.setText(val);
             String displayname = intent.getStringExtra("Displayname");
             File file = new File(android.os.Environment.getExternalStorageDirectory() + "/Bing Images/", displayname);
             Log.d(LOG_TAG, "File sent to BroadCastReceiver "+displayname + " " + file.getAbsolutePath());
@@ -175,9 +177,8 @@ public class MainActivity extends AppCompatActivity {
                     .centerCrop()
                     .into(imageOfTheDay);
             //imageOfTheDay.setVisibility(View.VISIBLE);
-            linearLayout.removeView(imageOfTheDay);
-            gridView.addHeaderView(imageOfTheDay);
-//            Collections.reverse(bitmapList);
+
+//            Collections.reverse(List);
 //            Collections.reverse(bitmapList);
             Log.d(LOG_TAG,"Total Files"+ String.valueOf(bitmapList.size()));
             adapter.notifyDataSetChanged();
@@ -198,7 +199,6 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         IntentFilter iff = new IntentFilter(mUtility.ACTION);
         LocalBroadcastManager.getInstance(this).registerReceiver(onNotice, iff);
-        textView.setText(sharedPreferences.getString("imageTitle", "No Image"));
         Log.d(LOG_TAG,"Resumed ");
         //mTracker.send(new HitBuilders.EventBuilder().setCategory("Resume").setAction("Share").build());
     }
@@ -241,14 +241,24 @@ public class MainActivity extends AppCompatActivity {
             bitmapList = mUtility.getAllFiles();
             if (bitmapList.size() > 0)
                 bitmapList.remove(0);
+            mTotalRows = bitmapList.size()/3 + 1;
             adapter = new wallpaperAdapter(mContext, bitmapList);
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
+            setHeight();
             gridView.setAdapter(adapter);
         }
+    }
+
+    private void setHeight() {
+        Log.d (LOG_TAG, "roes : " + mTotalRows);
+        if (bitmapList.size() == 0) {
+
+        }
+        gridView.getLayoutParams().height = (int) (mTotalRows * getResources().getDimension(R.dimen.size_100));
     }
 
 
@@ -401,8 +411,6 @@ public class MainActivity extends AppCompatActivity {
                     .skipMemoryCache(true)
                     .centerCrop()
                     .into(imageOfTheDay);
-            linearLayout.removeView(imageOfTheDay);
-            gridView.addHeaderView(imageOfTheDay);
 
         } catch (Exception e) {
             Log.d(LOG_TAG,"toBeExecutedEveryTime Image of the day not found");
@@ -413,14 +421,16 @@ public class MainActivity extends AppCompatActivity {
             if (isNetworkAvailable() == true) {
           //      progressBar.setVisibility(View.VISIBLE);
                 Log.d(LOG_TAG, "toBeExecutedEveryTime Network Available");
-                String tok = FirebaseInstanceId.getInstance().getToken();
-                Log.d(LOG_TAG,"toBeExecutedEveryTime FCM token "+tok);
+                //String tok = FirebaseInstanceId.getInstance().getToken();
+                //Log.d(LOG_TAG,"toBeExecutedEveryTime FCM token "+tok);
+                /*
                 try {
                     registerToken(tok);
                 }
                 catch (Exception e){
                     e.printStackTrace();
                 }
+                */
             } else {
                 Toast toast = Toast.makeText(getApplicationContext(), "NetWork not available", Toast.LENGTH_SHORT);
                 Log.d(LOG_TAG, "toBeExecutedEveryTime Network Not Available");
