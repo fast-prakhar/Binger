@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -26,8 +25,32 @@ public class SplashScreen extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.splash_screen);
         mContext=getApplicationContext();
+        if (ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+          // ActivityCompat.requestPermissions(SplashScreen.this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, rCode);
+
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    ActivityCompat.requestPermissions(SplashScreen.this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, rCode);
+                }
+            },3500);
+
+
+        } else {
+            Log.d(LOG_TAG,"onCreate Normal Start when all permisssions are given");
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    startActivity(new Intent(SplashScreen.this,MainActivity.class));
+                    finish();
+                }
+            },1500);
+
+        }
+/*
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -39,6 +62,7 @@ public class SplashScreen extends AppCompatActivity {
                 }
             }
         },1000);
+        */
     }
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -47,8 +71,13 @@ public class SplashScreen extends AppCompatActivity {
             case rCode: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.d(LOG_TAG,"Permission Granted");
-                    startActivity(new Intent(SplashScreen.this,MainActivity.class));
-
+                    new Timer().schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            startActivity(new Intent(SplashScreen.this,MainActivity.class));
+                            finish();
+                        }
+                    },1500);
                 } else {
                     Log.d(LOG_TAG,"Permission Not Granted");
                     Toast t = Toast.makeText(getApplicationContext(), "Please grant permission", Toast.LENGTH_SHORT);
@@ -60,9 +89,15 @@ public class SplashScreen extends AppCompatActivity {
                             finish();
                         }
                     }, 1000);
+
                 }
                 return;
             }
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 }
