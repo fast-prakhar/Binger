@@ -7,15 +7,15 @@ import android.content.Intent;
  * Created by aprakhar on 4/20/2016.
  */
 public class RegistrationIntentService extends IntentService {
-    private static String TAG = "WWE";
-    private static final String[] TOPICS = {"global"};
+   // private static String TAG = "WWE";
+    //private static final String[] TOPICS = {"global"};
 
     /**
      * Creates an IntentService.  Invoked by your subclass's constructor.
      *
      */
     public RegistrationIntentService() {
-        super(TAG);
+        super("WWE");
     }
 
 

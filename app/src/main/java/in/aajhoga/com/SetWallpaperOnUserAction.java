@@ -2,12 +2,11 @@ package in.aajhoga.com;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.widget.Toast;
 
 import java.io.IOException;
 
 /**
- * Created by Prashant on 13/06/16.
+ * Created by Prakhar on 13/06/16.
  */
 public class SetWallpaperOnUserAction {
 

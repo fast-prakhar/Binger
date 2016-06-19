@@ -4,16 +4,15 @@ import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.ProgressDialog;
 import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
@@ -22,7 +21,6 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Toast;
 
 import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -39,8 +37,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -98,21 +97,23 @@ public class Utility {
                     if (token == null) {
                         Log.d (LOG_TAG, "token is null");
                     }
-                    OkHttpClient okHttpClient = new OkHttpClient();
-                    RequestBody requestBody = new FormBody.Builder()
-                            .add("regID", token)
-                            .build();
+                    else {
+                        OkHttpClient okHttpClient = new OkHttpClient();
+                        RequestBody requestBody = new FormBody.Builder()
+                                .add("regID", token)
+                                .build();
 
 
-                    Request request = new Request.Builder()
-                            .url("https://helloman-1279.appspot.com")
-                            .post(requestBody)
-                            .build();
+                        Request request = new Request.Builder()
+                                .url("https://helloman-1279.appspot.com")
+                                .post(requestBody)
+                                .build();
 
-                    if (requestBody == null) {
-                        Log.d (LOG_TAG, "request body is null");
+                        if (requestBody == null) {
+                            Log.d(LOG_TAG, "request body is null");
+                        }
+                        response = okHttpClient.newCall(request).execute();
                     }
-                    response = okHttpClient.newCall(request).execute();
                 } catch (IOException e) {
                     e.printStackTrace();
                     Log.d("WWE RESPONSE", response.body().toString());
@@ -135,6 +136,24 @@ public class Utility {
         if (file.isDirectory()) {
             listFile = file.listFiles();
             // Log.d("Total files",String.valueOf(listFile.length));
+
+
+            Arrays.sort( listFile, new Comparator()
+            {
+                public int compare(Object o1, Object o2) {
+
+                    if (((File)o1).lastModified() > ((File)o2).lastModified()) {
+                        return -1;
+                    } else if (((File)o1).lastModified() < ((File)o2).lastModified()) {
+                        return +1;
+                    } else {
+                        return 0;
+                    }
+                }
+
+            });
+
+
             if (listFile != null) {
 
                 for (int i = 0; i < listFile.length; i++) {
@@ -143,7 +162,7 @@ public class Utility {
                     Log.d("WWe", listFile[i].getAbsolutePath());
 
                 }
-                Collections.reverse(f);
+                //Collections.reverse(f);
             }
             return f;
         } else {
@@ -330,7 +349,11 @@ public class Utility {
         windowManager.getDefaultDisplay().getMetrics(displayMetrics);
         int height = displayMetrics.heightPixels;
         int width = displayMetrics.widthPixels;
-        //loadedImage = Bitmap.createScaledBitmap(loadedImage, width, height, false);
+
+        float aspectRatio = loadedImage.getWidth() /
+                (float) loadedImage.getHeight();
+        width= (int) (height*aspectRatio);
+        loadedImage = Bitmap.createScaledBitmap(loadedImage, width, height, false);
         WallpaperManager wallpaperManager = WallpaperManager.getInstance(context);
         wallpaperManager.setWallpaperOffsetSteps(1, 1);
         wallpaperManager.suggestDesiredDimensions(width, height);
@@ -365,13 +388,14 @@ public class Utility {
     }
 
     private void createNotification(String myImageTitle, String filename) {
-        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.my_logo);
+        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher);
         Log.d(LOG_TAG, "creating notificaiton");
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
             NotificationCompat.Builder mBuilder = (NotificationCompat.Builder) new NotificationCompat.Builder(context)
                     .setLargeIcon(bitmap)
-                    .setSmallIcon(R.drawable.applogo)
-                    .setContentTitle("Binger")
+                    .setColor(Color.BLACK)
+                    .setSmallIcon(R.mipmap.ic_googleplaystore)
+                    .setContentTitle(context.getResources().getString(R.string.app_name))
                     .setAutoCancel(true)
                     .setContentText(myImageTitle);
             Intent I = new Intent(context, MainActivity.class);

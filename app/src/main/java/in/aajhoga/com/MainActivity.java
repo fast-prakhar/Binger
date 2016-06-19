@@ -32,12 +32,11 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -73,14 +72,12 @@ public class MainActivity extends AppCompatActivity implements SetWallpaperListe
         mScrollView = (ScrollView) findViewById(R.id.scroll_view);
         mScrollView.fullScroll(View.FOCUS_UP);
         gridView = (GridView) findViewById(R.id.grid_view);
-
         gridView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 return false;
             }
         });
-
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -89,13 +86,27 @@ public class MainActivity extends AppCompatActivity implements SetWallpaperListe
                 Intent intent = new Intent(MainActivity.this, ViewSelectedImage.class);
                 intent.putExtra("image", bitmapList.get(position));
                 startActivity(intent);
-
             }
         });
-        imageOfTheDay= (ImageView) findViewById(R.id.image_of_the_day);
+        imageOfTheDay = (ImageView) findViewById(R.id.image_of_the_day);
         imageOfTheDay.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.my_logo));
+
+
+        imageOfTheDay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (getSharedPreferences("hello", MODE_PRIVATE).getString("fileName", null) == null) {
+                    Toast.makeText(MainActivity.this, "Please wait, fetching image", Toast.LENGTH_SHORT).show();
+                } else {
+                    Intent intent = new Intent(MainActivity.this, ViewSelectedImage.class);
+                    intent.putExtra("image", Environment.getExternalStorageDirectory()+"/Bing Images/"+getSharedPreferences("hello", MODE_PRIVATE).getString("fileName", "null"));
+                    startActivity(intent);
+                }
+            }
+        });
         //AnalyticsApplication application = (AnalyticsApplication) getApplication();
-       // mTracker = application.getDefaultTracker();
+        // mTracker = application.getDefaultTracker();
 
         registerForContextMenu(gridView);
 
@@ -103,72 +114,22 @@ public class MainActivity extends AppCompatActivity implements SetWallpaperListe
 
         sharedPreferences = this.getSharedPreferences("hello", MODE_PRIVATE);
 
-        //textView.setText(sharedPreferences.getString("imageTitle", "No Image "));
         if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            Log.d(LOG_TAG, "Main Activity");
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, rCode);
-        }
-        else {
+        } else {
             try {
                 toBeExecutedEveryTime();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            //func();
+
         }
 
         dialog = new ProgressDialog(MainActivity.this);
         dialog.setMessage("Please Wait..!!");
 
-        /*
-        mUtility = new Utility(this);
-        retryCount = getSharedPreferences(mUtility.mRetryCount, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = retryCount.edit();
-        editor.putInt(mUtility.mRetryCount, 0);
-        editor.commit();
-
-        File sdcard = Environment.getExternalStorageDirectory();
-        final File f = new File(sdcard + "/Bing Images");
-        String defValue = null;
-        String token = sharedPreferences.getString("TOKEN", defValue);
-
-        f.mkdir();
-
-        try {
-            File image_of_the_day = new File(sdcard + "/Bing Images",sharedPreferences.getString("fileName",null));
-            Glide
-                    .with(this)
-                    .load(image_of_the_day.getAbsolutePath())
-                    .centerCrop()
-                    .into(imageOfTheDay);
-
-        } catch (Exception e) {
-            Log.d(LOG_TAG,"Image of the day not found");
-            e.printStackTrace();
-        }
-        Log.d("WWEtoken at strt","@@@"+token);
-        if (token == null) {
-            if (isNetworkAvailable() == true) {
-                Log.d("WWE", "going through");
-                startService(new Intent(mContext, RegistrationIntentService.class));
-            } else {
-                Toast toast = Toast.makeText(getApplicationContext(), "NetWork not available", Toast.LENGTH_SHORT);
-                Log.d("WWE", "Network Not available");
-                toast.show();
-            }
-        }
-
-
-        new loadImage().execute();
-        gridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                // String str=gridView.getItemAtPosition(position).toString();
-                // Log.d("LONG click",str);
-                return false;
-            }
-        });
-        */
-        }
+    }
 
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
@@ -182,26 +143,24 @@ public class MainActivity extends AppCompatActivity implements SetWallpaperListe
 
         @Override
         public void onReceive(Context context, Intent intent) {
-
-
-            Log.d(LOG_TAG,"BroadcastReceiver On Receive Called");
+            Log.d(LOG_TAG, "BroadcastReceiver On Receive Called");
             String val = intent.getStringExtra("Filename");
             String displayname = intent.getStringExtra("Displayname");
             File file = new File(android.os.Environment.getExternalStorageDirectory() + "/Bing Images/", displayname);
-            Log.d(LOG_TAG, "File sent to BroadCastReceiver "+displayname + " " + file.getAbsolutePath());
-      //      progressBar.setVisibility(View.GONE);
+            Log.d(LOG_TAG, "File sent to BroadCastReceiver " + displayname + " " + file.getAbsolutePath());
+            //      progressBar.setVisibility(View.GONE);
             Glide.with(mContext)
                     .load(file.getAbsolutePath())
                     .diskCacheStrategy(DiskCacheStrategy.NONE)
                     .skipMemoryCache(true)
                     .centerCrop()
                     .into(imageOfTheDay);
-            //imageOfTheDay.setVisibility(View.VISIBLE);
 
 //            Collections.reverse(List);
 //            Collections.reverse(bitmapList);
-            Log.d(LOG_TAG,"Total Files"+ String.valueOf(bitmapList.size()));
+            Log.d(LOG_TAG, "Total Files" + String.valueOf(bitmapList.size()));
             adapter.notifyDataSetChanged();
+
             //mTracker.send(new HitBuilders.EventBuilder().setCategory("Foreground").setAction("Share").build());
 
         }
@@ -210,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements SetWallpaperListe
     @Override
     protected void onPause() {
         super.onPause();
-        Log.d(LOG_TAG,"Paused");
+        Log.d(LOG_TAG, "Paused");
         LocalBroadcastManager.getInstance(this).unregisterReceiver(onNotice);
     }
 
@@ -219,17 +178,17 @@ public class MainActivity extends AppCompatActivity implements SetWallpaperListe
         super.onResume();
         IntentFilter iff = new IntentFilter(mUtility.ACTION);
         LocalBroadcastManager.getInstance(this).registerReceiver(onNotice, iff);
-        Log.d(LOG_TAG,"Resumed ");
+        Log.d(LOG_TAG, "Resumed ");
         //mTracker.send(new HitBuilders.EventBuilder().setCategory("Resume").setAction("Share").build());
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        Log.d(LOG_TAG,"Permission Request Start");
+        Log.d(LOG_TAG, "Permission Request Start");
         switch (requestCode) {
             case rCode: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(LOG_TAG,"Permission Granted");
+                    Log.d(LOG_TAG, "Permission Granted");
                     try {
                         toBeExecutedEveryTime();
                     } catch (IOException e) {
@@ -237,13 +196,13 @@ public class MainActivity extends AppCompatActivity implements SetWallpaperListe
                     }
 
                 } else {
-                    Log.d(LOG_TAG,"Permission Not Granted");
+                    Log.d(LOG_TAG, "Permission Not Granted");
                     Toast t = Toast.makeText(getApplicationContext(), "Pls give permission", Toast.LENGTH_SHORT);
                     t.show();
                     new Timer().schedule(new TimerTask() {
                         @Override
                         public void run() {
-                            Log.d(LOG_TAG,"Finishing Activity");
+                            Log.d(LOG_TAG, "Finishing Activity");
                             finish();
                         }
                     }, 1000);
@@ -265,9 +224,16 @@ public class MainActivity extends AppCompatActivity implements SetWallpaperListe
         @Override
         protected Void doInBackground(Void... params) {
             bitmapList = mUtility.getAllFiles();
+            Log.d(LOG_TAG, "Total size of bitmapList doInBackground " + bitmapList.size());
             if (bitmapList.size() > 0)
                 bitmapList.remove(0);
-            mTotalRows = bitmapList.size()/3 + 1;
+            if (bitmapList.size() % 3 == 0) {
+                mTotalRows = bitmapList.size() / 3;
+                Log.d(LOG_TAG, "doInBackground If executed" + mTotalRows);
+            } else {
+                mTotalRows = bitmapList.size() / 3 + 1;
+                Log.d(LOG_TAG, "doInBackground else executed" + mTotalRows);
+            }
             adapter = new wallpaperAdapter(mContext, bitmapList);
             return null;
         }
@@ -280,7 +246,7 @@ public class MainActivity extends AppCompatActivity implements SetWallpaperListe
     }
 
     private void setHeight() {
-        Log.d (LOG_TAG, "roes : " + mTotalRows);
+        Log.d(LOG_TAG, "roes : " + mTotalRows);
         if (bitmapList.size() == 0) {
 
         }
@@ -294,26 +260,24 @@ public class MainActivity extends AppCompatActivity implements SetWallpaperListe
             Log.d(LOG_TAG, "onNewIntent");
             String displayname = intent.getStringExtra("Displayname");
             File file = new File(android.os.Environment.getExternalStorageDirectory() + "/Bing Images/", displayname);
-            Log.d(LOG_TAG, "File sent to onNewIntent"+displayname + " " + file.getAbsolutePath());
-        //    progressBar.setVisibility(View.GONE);
+            Log.d(LOG_TAG, "File sent to onNewIntent" + displayname + " " + file.getAbsolutePath());
+            //    progressBar.setVisibility(View.GONE);
             Glide.with(mContext)
                     .load(file.getAbsolutePath())
                     .diskCacheStrategy(DiskCacheStrategy.NONE)
                     .skipMemoryCache(true)
                     .centerCrop()
                     .into(imageOfTheDay);
-            //imageOfTheDay.setVisibility(View.VISIBLE);
-            //linearLayout.removeView(imageOfTheDay);
-            //gridView.addHeaderView(imageOfTheDay);
-            Collections.reverse(bitmapList);
-            bitmapList.add(file.getAbsolutePath());
-            Collections.reverse(bitmapList);
-            Log.d(LOG_TAG,"Total Files"+ String.valueOf(bitmapList.size()));
+
+            //Collections.reverse(bitmapList);
+            //bitmapList.add(file.getAbsolutePath());
+            //Collections.reverse(bitmapList);
+            bitmapList.add(0, file.getAbsolutePath());
+            Log.d(LOG_TAG, "Total Files" + String.valueOf(bitmapList.size()));
             adapter.notifyDataSetChanged();
         }
         super.onNewIntent(intent);
     }
-
 
 
     @Override
@@ -344,10 +308,10 @@ public class MainActivity extends AppCompatActivity implements SetWallpaperListe
                         e.printStackTrace();
                     }
                 } else {
-                    Log.d(LOG_TAG,"onOptionsItemSelected Error Not running");
+                    Log.d(LOG_TAG, "onOptionsItemSelected Error Not running");
                 }
                 item.setTitle("Start Service");
-                Log.d(LOG_TAG,"onOptionsItemSelected Start TO Stopped Unsubscribed");
+                Log.d(LOG_TAG, "onOptionsItemSelected Start TO Stopped Unsubscribed");
                /* new Timer().schedule(new TimerTask() {
                     @Override
                     public void run() {
@@ -369,7 +333,7 @@ public class MainActivity extends AppCompatActivity implements SetWallpaperListe
                     }
                 }, 1500);*/
                 item.setTitle("Stop Service");
-                Log.d(LOG_TAG,"onOptionsItemSelected Stop TO Start Subscribed");
+                Log.d(LOG_TAG, "onOptionsItemSelected Stop TO Start Subscribed");
             }
             return true;
         }
@@ -381,7 +345,7 @@ public class MainActivity extends AppCompatActivity implements SetWallpaperListe
         super.onCreateContextMenu(menu, v, menuInfo);
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.cntxt_menu, menu);
-        Log.d(LOG_TAG,"onCreateContextMenu Created");
+        Log.d(LOG_TAG, "onCreateContextMenu Created");
     }
 
     @Override
@@ -392,10 +356,10 @@ public class MainActivity extends AppCompatActivity implements SetWallpaperListe
         View v = adapterContextMenuInfo.targetView;
         int clickedPosition = adapterContextMenuInfo.position;
         String val = (String) gridView.getItemAtPosition(clickedPosition);
-        Log.d(LOG_TAG,"onContextItemSelected File path Clicked is "+val);
+        Log.d(LOG_TAG, "onContextItemSelected File path Clicked is " + val);
         String[] parts = val.split("/");
         val = parts[parts.length - 1];
-        Log.d(LOG_TAG,"onContextItemSelected File path Clicked is After split"+val);
+        Log.d(LOG_TAG, "onContextItemSelected File path Clicked is After split" + val);
 
         dialog.show();
         final String finalVal = val;
@@ -403,13 +367,13 @@ public class MainActivity extends AppCompatActivity implements SetWallpaperListe
         task.setWallpaperListener(this);
         task.execute(finalVal);
 
-        Log.d(LOG_TAG,"onContextItemSelected  Image changed using ContextMenu");
+        Log.d(LOG_TAG, "onContextItemSelected  Image changed using ContextMenu");
         return super.onContextItemSelected(item);
     }
 
 
     public void toBeExecutedEveryTime() throws IOException {
-        Log.d(LOG_TAG,"toBeExecutedEveryTime Inside");
+        Log.d(LOG_TAG, "toBeExecutedEveryTime Inside");
         retryCount = getSharedPreferences(mUtility.mRetryCount, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = retryCount.edit();
         editor.putInt(mUtility.mRetryCount, 0);
@@ -423,8 +387,8 @@ public class MainActivity extends AppCompatActivity implements SetWallpaperListe
         f.mkdir();
 
         try {
-            File image_of_the_day = new File(sdcard + "/Bing Images",sharedPreferences.getString("fileName",null));
-            Log.d(LOG_TAG,"toBeExecutedEveryTime IMage of the day found");
+            File image_of_the_day = new File(sdcard + "/Bing Images", sharedPreferences.getString("fileName", null));
+            Log.d(LOG_TAG, "toBeExecutedEveryTime IMage of the day found");
             Glide
                     .with(this)
                     .load(image_of_the_day.getAbsolutePath())
@@ -434,33 +398,46 @@ public class MainActivity extends AppCompatActivity implements SetWallpaperListe
                     .into(imageOfTheDay);
 
         } catch (Exception e) {
-            Log.d(LOG_TAG,"toBeExecutedEveryTime Image of the day not found");
+            Log.d(LOG_TAG, "toBeExecutedEveryTime Image of the day not found");
             e.printStackTrace();
         }
 
         if (token == null) {
             if (isNetworkAvailable() == true) {
-          //      progressBar.setVisibility(View.VISIBLE);
+                //      progressBar.setVisibility(View.VISIBLE);
                 Log.d(LOG_TAG, "toBeExecutedEveryTime Network Available");
-                //String tok = FirebaseInstanceId.getInstance().getToken();
-                //Log.d(LOG_TAG,"toBeExecutedEveryTime FCM token "+tok);
-                /*
-                try {
-                    registerToken(tok);
+                Log.d(LOG_TAG, "toBeExecutedEveryTime FCM token " + token);
+
+
+                for (int i = 0; i <= 4; i++) {
+                    token = FirebaseInstanceId.getInstance().getToken();
+                    if (token == null)
+                        continue;
+                    else {
+                        Log.d(LOG_TAG, "toBeExecutedEveryTime FCM token " + token);
+
+                        try {
+                            registerToken(token);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    }
                 }
-                catch (Exception e){
-                    e.printStackTrace();
+                if (token == null) {
+                    Log.d(LOG_TAG, "NOT Able to genetate token ");
                 }
-                */
+
             } else {
                 Toast toast = Toast.makeText(getApplicationContext(), "NetWork not available", Toast.LENGTH_SHORT);
                 Log.d(LOG_TAG, "toBeExecutedEveryTime Network Not Available");
                 toast.show();
-                
+
             }
-        }
-        else {
+        } else {
             Log.d(LOG_TAG, "toBeExecutedEveryTime Token is not null");
+            Log.d(LOG_TAG, "toBeExecutedEveryTime FCM token " + token);
+            registerToken(token);
 
         }
 
@@ -477,18 +454,39 @@ public class MainActivity extends AppCompatActivity implements SetWallpaperListe
 
 
     }
-    private void registerToken(String refreshedToken) throws IOException {
-        SharedPreferences.Editor editor = getSharedPreferences("hello",MODE_PRIVATE).edit();
-        editor.putString("TOKEN",refreshedToken);
-        editor.commit();
 
+    private void registerToken(String refreshedToken) throws IOException {
+
+        SharedPreferences sharedPreferences = getSharedPreferences("hello", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("TOKEN", refreshedToken);
+        editor.apply();
+        //
         new SubscriptionHandler().subscribeTopics();
-        if (new Utility().sendTokenToServer(refreshedToken) == true){
-            Log.d(LOG_TAG," registerToken Token sent to server");
+        if (sharedPreferences.getBoolean("TOKENSENT", false) == false) {
+            for (int i = 0; i < 5; i++) {
+                if (new Utility().sendTokenToServer(refreshedToken) == true) {
+                    Log.d(LOG_TAG, "Token sent to server");
+                    editor.putBoolean("TOKENSENT", true);
+                    editor.apply();
+                    break;
+                }
+            }
+            if (sharedPreferences.getBoolean("TOKENSENT", false) == false) {
+                Log.d(LOG_TAG, "Token not sent after 5 retries");
+            }
+
+        } else {
+            Log.d(LOG_TAG, "Token was already sent to server");
         }
-        else {
-            Log.d(LOG_TAG,"registerToken Token not sent to server");
-        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        Log.d(LOG_TAG, "onBackPressed Before Finishing");
+        super.onBackPressed();
+        Log.d(LOG_TAG, "onBackPressed Finishing");
+        finish();
 
     }
 }
