@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements SetWallpaperListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+       
 
         mContext = getApplicationContext();
         //progressBar = (ProgressBar) findViewById(R.id.progress_bar);

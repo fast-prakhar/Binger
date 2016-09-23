@@ -251,13 +251,11 @@ public class Utility {
                         editor.putInt("downloadStatus", 1);
                         editor.putString("fileName", filename);
                         editor.apply();
-
                         try {
                             setImageAsWallpaper(filename);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-
                         if (isInForeground() == true) {
                             boolean b = LocalBroadcastManager.getInstance(context).sendBroadcast(I);
                             Log.d(LOG_TAG, String.valueOf(b));
